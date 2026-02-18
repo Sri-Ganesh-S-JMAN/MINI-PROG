@@ -12,3 +12,160 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// This is the central Prisma schema for the entire modular ITSM system.
+// Each model and field is commented with its purpose and relations.
+// All team members must use this schema as the contract for data shape.
+
+// ------------------------------------
+// ENUMS: Define status values for consistency across modules
+// ------------------------------------
+
+enum TicketStatus {
+  OPEN // Ticket is newly created and not yet processed
+  IN_PROGRESS // Ticket is being worked on by assigned agent
+  RESOLVED // Issue fixed but not closed yet
+  CLOSED // Ticket is closed, no further action needed
+}
+
+enum AssetStatus {
+  AVAILABLE // Asset ready to be allocated
+  ALLOCATED // Asset currently assigned to a user
+  IN_REPAIR // Asset under maintenance
+  RETIRED // Asset permanently removed from active use
+}
+
+enum RequestStatus {
+  PENDING // Request submitted, waiting for manager approval
+  MANAGER_APPROVED // Approved by manager, waiting for admin approval
+  ADMIN_APPROVED // Fully approved, asset ready for allocation
+  REJECTED // Request denied
+  ALLOCATED // Asset allocated following approval
+}
+
+enum ApprovalStatus {
+  APPROVED // Approval granted
+  REJECTED // Approval denied
+}
+
+// ------------------------------------
+// MODELS: Main data entities used by all modules
+// ------------------------------------
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // Role name (Admin, Agent, Employee, etc)
+  users User[] // Users assigned to this role
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  roleId   Int
+  role     Role   @relation(fields: [roleId], references: [id])
+
+  ticketsCreated  Ticket[]
+  ticketsAssigned Ticket[] @relation("AssignedTickets")
+
+  assetRequests AssetRequest[]
+  approvals     Approval[]     @relation("UserApprovals")
+
+  // 🔧 ADD THESE ↓↓↓
+  ticketComments   TicketComment[]
+  notifications    Notification[]
+  assetAllocations AssetAllocation[]
+
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id           Int          @id @default(autoincrement())
+  title        String // Brief summary of the issue
+  description  String // Detailed problem description
+  status       TicketStatus @default(OPEN) // Current ticket state
+  priority     String // Priority level: Low, Medium, High (can be enum later)
+  createdById  Int // User who created the ticket
+  assignedToId Int? // User assigned to resolve (agent), optional
+
+  createdBy  User            @relation(fields: [createdById], references: [id])
+  assignedTo User?           @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  comments   TicketComment[] // Comments related to ticket
+
+  slaHours  Int // SLA duration in hours to resolve
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TicketComment {
+  id       Int    @id @default(autoincrement())
+  message  String // Comment content text
+  ticketId Int // Ticket this comment belongs to
+  userId   Int // User who wrote the comment
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id      Int     @id @default(autoincrement())
+  message String // Notification message shown to user
+  userId  Int // Recipient user ID
+  read    Boolean @default(false) // Read/unread status
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Asset {
+  id       Int         @id @default(autoincrement())
+  name     String
+  serialNo String      @unique
+  status   AssetStatus @default(AVAILABLE)
+
+  allocations   AssetAllocation[]
+  // 🔧 ADD THIS ↓↓↓
+  assetRequests AssetRequest[]
+
+  createdAt DateTime @default(now())
+}
+
+model AssetAllocation {
+  id          Int       @id @default(autoincrement())
+  assetId     Int // Which asset is allocated
+  userId      Int // To which user the asset was allocated
+  allocatedAt DateTime  @default(now()) // Allocation timestamp
+  returnedAt  DateTime? // Return timestamp (null if not returned)
+
+  asset Asset @relation(fields: [assetId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model AssetRequest {
+  id      Int           @id @default(autoincrement())
+  userId  Int // User requesting the asset
+  assetId Int // Asset requested
+  status  RequestStatus @default(PENDING) // Current request status
+
+  user      User       @relation(fields: [userId], references: [id])
+  asset     Asset      @relation(fields: [assetId], references: [id])
+  approvals Approval[] // Approval records linked to request
+
+  createdAt DateTime @default(now())
+}
+
+model Approval {
+  id           Int            @id @default(autoincrement())
+  requestId    Int // Which asset request this approval belongs to
+  approvedById Int // User who performed approval action
+  status       ApprovalStatus // Approved or Rejected
+
+  request    AssetRequest @relation(fields: [requestId], references: [id])
+  approvedBy User         @relation("UserApprovals", fields: [approvedById], references: [id])
+
+  createdAt DateTime @default(now())
+}
