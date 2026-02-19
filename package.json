@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/debug-prisma-env.mjs && node scripts/verify-prisma-client.mjs",
+    "prebuild": "node scripts/debug-prisma-env.mjs && node scripts/verify-prisma-client.mjs",
+    "postinstall": "prisma generate && node scripts/verify-prisma-client.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:verify": "node scripts/verify-prisma-client.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
