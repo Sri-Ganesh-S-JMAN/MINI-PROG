@@ -1,17 +1,20 @@
-﻿import '@/styles/globals.css'
-import Navbar from '@/components/Navbar'
-import Sidebar from '@/components/Sidebar'
+﻿import "./globals.css";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  title: "JDesk",
+  description: "Enterprise ITSM Platform",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
-        <Navbar />
-        <div style={{ display: 'flex' }}>
-          <Sidebar />
-          <main style={{ padding: 20 }}>{children}</main>
-        </div>
+        {children}
       </body>
     </html>
-  )
+  );
 }
