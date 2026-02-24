@@ -1,4 +1,4 @@
-import { PrismaClient, RequestStatus, ApprovalStatus } from "@prisma/client";
+import { PrismaClient, RequestStatus, ApprovalStatus, AssetStatus } from "@prisma/client";
 
 export default async function seedAssetRequests(
   prisma: PrismaClient
@@ -21,7 +21,7 @@ export default async function seedAssetRequests(
   });
 
   const assets = await prisma.asset.findMany({
-    where: { status: "AVAILABLE" },
+    where: { status: AssetStatus.AVAILABLE },
     select: { id: true },
   });
 
@@ -34,10 +34,19 @@ export default async function seedAssetRequests(
   // -----------------------------
   const requests = [];
 
+  const reasons = [
+    "Need for remote work",
+    "Replacement for damaged device",
+    "New join allocation",
+    "Project requirement",
+    "Upgrade request",
+  ];
+
   for (let i = 0; i < 250; i++) {
     requests.push({
       userId: employees[i % employees.length].id,
       assetId: assets[i % assets.length].id,
+      reason: reasons[i % reasons.length],
       status:
         i % 5 === 0
           ? RequestStatus.REJECTED
