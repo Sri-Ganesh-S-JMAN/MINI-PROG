@@ -1,21 +1,17 @@
 FROM node:lts-alpine AS builder
 ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
-
-WORKDIR /usr/src/app                
+WORKDIR /app                
 COPY . .
-RUN npm install && mv node_modules /usr/src/
+RUN npm install
 RUN npm run build
 
 
 FROM node:lts-alpine
-WORKDIR /usr/src/app
+WORKDIR /app
 ENV NODE_ENV=production
-
-COPY --from=builder /usr/src/app ./
-COPY --from=builder /usr/src/node_modules /usr/src/node_modules
-
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 EXPOSE 3000
-RUN chown -R node /usr/src/app
-USER node
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
