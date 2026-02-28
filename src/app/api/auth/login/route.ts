@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-export async function POST(req: NextRequest) { 
+export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
+
     console.log("Entered Email:", email);
     console.log("Entered Password:", password);
 
@@ -14,7 +15,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Hardcoded demo user
     const validEmail = "admin@test.com";
     const validPassword = "123456";
     const role = "Admin";
