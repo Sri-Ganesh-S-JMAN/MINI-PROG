@@ -14,9 +14,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.0",
     "bcrypt": "^6.0.0",
+=======
+    "@prisma/adapter-pg": "^7.4.0",
+    "@prisma/client": "^7.4.1",
+>>>>>>> 8a48d8c5dcba3cd0a45517314db77a09aca7963c
     "dotenv": "^17.3.1",
     "jsonwebtoken": "^9.0.3",
     "next": "16.1.6",
