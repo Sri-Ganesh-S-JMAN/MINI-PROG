@@ -1,43 +1,135 @@
 ﻿import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function GET() {
-  // TICKETS
-  const totalTickets = await prisma.ticket.count();
-  const ticketStatusCounts = await prisma.ticket.groupBy({
-    by: ["status"],
-    _count: { status: true }
-  });
+  try {
+    const [
+      // Tickets
+      totalTickets,
+      openTickets,
+      inProgressTickets,
+      resolvedTickets,
+      closedTickets,
+      recentTickets,
 
-  // SLA BREACHES
-  const now = new Date();
-  const tickets = await prisma.ticket.findMany();
-  const slaBreaches = tickets.filter(ticket => {
-    const expiry = new Date(ticket.createdAt);
-    expiry.setHours(expiry.getHours() + ticket.slaHours);
-    return expiry < now && ticket.status !== "RESOLVED";
-  }).length;
+      // Assets
+      totalAssets,
+      availableAssets,
+      allocatedAssets,
+      inRepairAssets,
+      retiredAssets,
 
-  // ASSETS
-  const totalAssets = await prisma.asset.count();
-  const allocatedAssets = await prisma.asset.count({
-    where: { status: "ALLOCATED" }
-  });
+      // Asset Requests
+      totalRequests,
+      pendingRequests,
+      approvedRequests,
+      rejectedRequests,
+      recentRequests,
 
-  // ASSET REQUESTS
-  const pendingRequests = await prisma.assetRequest.count({
-    where: { status: "PENDING" }
-  });
+      // Users
+      totalUsers,
 
-  // NOTIFICATIONS
-  const unreadNotifications = await prisma.notification.count({
-    where: { read: false }
-  });
+      // Notifications
+      unreadNotifications,
 
-  return NextResponse.json({
-    tickets: { totalTickets, ticketStatusCounts, slaBreaches },
-    assets: { totalAssets, allocatedAssets },
-    requests: { pendingRequests },
-    notifications: { unreadNotifications }
-  });
+      // Recent Activity (comments)
+      recentComments,
+    ] = await Promise.all([
+      // Tickets
+      prisma.ticket.count(),
+      prisma.ticket.count({ where: { status: "OPEN" } }),
+      prisma.ticket.count({ where: { status: "IN_PROGRESS" } }),
+      prisma.ticket.count({ where: { status: "RESOLVED" } }),
+      prisma.ticket.count({ where: { status: "CLOSED" } }),
+      prisma.ticket.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          createdBy: { select: { name: true } },
+          assignedTo: { select: { name: true } },
+        },
+      }),
+
+      // Assets
+      prisma.asset.count(),
+      prisma.asset.count({ where: { status: "AVAILABLE" } }),
+      prisma.asset.count({ where: { status: "ALLOCATED" } }),
+      prisma.asset.count({ where: { status: "IN_REPAIR" } }),
+      prisma.asset.count({ where: { status: "RETIRED" } }),
+
+      // Asset Requests
+      prisma.assetRequest.count(),
+      prisma.assetRequest.count({ where: { status: "PENDING" } }),
+      prisma.assetRequest.count({
+        where: { status: { in: ["ADMIN_APPROVED", "ALLOCATED"] } },
+      }),
+      prisma.assetRequest.count({ where: { status: "REJECTED" } }),
+      prisma.assetRequest.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: { select: { name: true } },
+          asset: { select: { name: true, serialNo: true } },
+        },
+      }),
+
+      // Users
+      prisma.user.count(),
+
+      // Notifications
+      prisma.notification.count({ where: { read: false } }),
+
+      // Recent comments
+      prisma.ticketComment.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: {
+          user: { select: { name: true } },
+          ticket: { select: { title: true } },
+        },
+      }),
+    ]);
+
+    return NextResponse.json({
+      tickets: {
+        total: totalTickets,
+        open: openTickets,
+        inProgress: inProgressTickets,
+        resolved: resolvedTickets,
+        closed: closedTickets,
+        recent: recentTickets,
+      },
+      assets: {
+        total: totalAssets,
+        available: availableAssets,
+        allocated: allocatedAssets,
+        inRepair: inRepairAssets,
+        retired: retiredAssets,
+      },
+      requests: {
+        total: totalRequests,
+        pending: pendingRequests,
+        approved: approvedRequests,
+        rejected: rejectedRequests,
+        recent: recentRequests,
+      },
+      users: {
+        total: totalUsers,
+      },
+      notifications: {
+        unread: unreadNotifications,
+      },
+      recentActivity: recentComments,
+    });
+  } catch (error) {
+    console.error("Dashboard API error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch dashboard data" },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
 }
