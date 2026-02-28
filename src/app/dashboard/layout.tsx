@@ -36,17 +36,18 @@ export default function DashboardLayout({
         <ul className="space-y-4">
           <li>Dashboard</li>
 
-          {role === "Admin" && (
-            <>
-              <li
-  onClick={() => router.push("/dashboard/users")}
-  className="cursor-pointer hover:text-orange-400"
->
-  User Management
-</li>
-              <li>Reports</li>
-            </>
-          )}
+{role === "Admin" && (
+
+  <>
+    <li
+      onClick={() => router.push("/dashboard/users")}
+      className="cursor-pointer hover:text-orange-400"
+    >
+      User Management
+    </li>
+    <li>Reports</li>
+  </>
+)}
         </ul>
 
         <button

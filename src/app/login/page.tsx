@@ -1,120 +1,75 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: any) => {
     e.preventDefault();
-
     setError("");
-    setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.message);
-        setLoading(false);
-        return;
-      }
-
-      // Success → middleware will handle protection
-      router.push("/dashboard");
-    } catch (err) {
-      setError("Something went wrong. Try again.");
+    if (!res.ok) {
+      setError("Invalid email or password ❌");
+      return;
     }
 
-    setLoading(false);
+    localStorage.setItem("token", data.token);
+    window.location.href = "/dashboard";
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side */}
-      <div className="hidden md:flex w-1/2 bg-gradient-to-br from-[#0A1F44] to-[#1F3C88] text-white flex-col justify-center p-16">
-        <h1 className="text-5xl font-black mb-6">JDesk</h1>
-        <p className="text-xl opacity-90 mb-10">
-          Enterprise IT Service Management Platform
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-700 px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+        
+        <h1 className="text-3xl font-bold text-center text-purple-700 mb-2">
+          JDESK
+        </h1>
+
+        <p className="text-center text-gray-500 mb-6">
+          Welcome Back 👋
         </p>
 
-        <div className="space-y-4">
-          <p>✔ SLA Tracking</p>
-          <p>✔ Asset Lifecycle</p>
-          <p>✔ Structured Workflow</p>
-        </div>
-      </div>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-      {/* Right Side */}
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-white p-8">
-        <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-bold mb-2">Sign In</h2>
-          <p className="text-gray-500 text-sm mb-6">
-            Welcome back. Please enter your credentials.
-          </p>
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full p-3 border rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="text-sm font-semibold block mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="name@company.com"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="text-sm font-semibold block mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Error Message */}
             {error && (
-              <p className="text-red-600 text-sm font-medium">
-                {error}
-              </p>
+              <p className="text-red-500 text-sm mt-2">{error}</p>
             )}
+          </div>
 
-            {/* Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#1F3C88] hover:bg-[#162d66] text-white font-bold py-3 rounded-lg transition"
-            >
-              {loading ? "Logging in..." : "Login to Dashboard"}
-            </button>
-          </form>
-        </div>
+          <button
+            type="submit"
+            className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition"
+          >
+            Login
+          </button>
+        </form>
       </div>
     </div>
   );
