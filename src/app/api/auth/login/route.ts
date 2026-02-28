@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const validEmail = "admin@test.com";
-    const validPassword = "123456";
+    const validPassword = "admin123";
     const role = "Admin";
 
     if (
