@@ -27,11 +27,11 @@ pipeline{
                     withCredentials([usernamePassword(credentialsId: 'DOCKER_CREDS', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         if (isUnix()) {
                             sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                            sh 'docker push ganuthebabu/MINI_PROG:latest'
+                            sh 'docker push ganuthebabu/mini_prog:latest'
                             sh 'docker logout'
                         } else {
                             bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-                            bat 'docker push ganuthebabu/MINI_PROG:latest'
+                            bat 'docker push ganuthebabu/mini_prog:latest'
                             bat 'docker logout'
                         }
                     }
