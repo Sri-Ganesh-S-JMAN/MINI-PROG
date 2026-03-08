@@ -43,3 +43,18 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/dashboard/:path*"],
 };
+
+// comment above code and uncomment below for a simpler middleware that just allows 
+// all dashboard routes without auth checks (useful during development)
+
+// import { NextResponse } from "next/server";
+// import type { NextRequest } from "next/server";
+
+// export function middleware(request: NextRequest) {
+//   // Dev mode: allow all dashboard routes
+//   return NextResponse.next();
+// }
+
+// export const config = {
+//   matcher: ["/dashboard/:path*"],
+// };
