@@ -1,4 +1,4 @@
-// Prisma Client Generator
+make// Prisma Client Generator
 generator client {
   provider = "prisma-client-js"
   engineType = "binary"
@@ -84,6 +84,7 @@ model Ticket {
   description  String
   status       TicketStatus @default(OPEN)
   priority     String
+  category     String       @default("Other")
   createdById  Int
   assignedToId Int?
  
@@ -92,16 +93,21 @@ model Ticket {
  
   comments TicketComment[]
  
-  slaHours  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slaDeadline DateTime @default(now()) // Deadline for SLA
+  slaHours    Int      @default(24)    // SLA hours based on priority
+  resolvedAt  DateTime?                // When ticket was resolved
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
  
 model TicketComment {
-  id       Int    @id @default(autoincrement())
-  message  String
-  ticketId Int
-  userId   Int
+  id         Int     @id @default(autoincrement())
+  message    String  // Main content (kept for compatibility)
+  content    String? // Alternative content field
+  ticketId   Int
+  userId     Int
+  authorId   Int?    // Reference to author for easier queries
+  isInternal Boolean @default(false) // Internal comments visible only to agents/admins
  
   ticket Ticket @relation(fields: [ticketId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
