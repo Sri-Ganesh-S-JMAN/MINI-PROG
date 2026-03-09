@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 /**
  * SECTION 1
@@ -41,7 +42,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Admin User ${i}`,
       email: `admin${i}@itsm.com`,
-      password: "hashed_password",
+      password: bcrypt.hashSync("password", 10),
       roleId: adminRole.id,
     });
   }
@@ -51,7 +52,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Manager ${i}`,
       email: `manager${i}@itsm.com`,
-      password: "hashed_password",
+      password: bcrypt.hashSync("password", 10),
       roleId: managerRole.id,
     });
   }
@@ -61,7 +62,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Support Agent ${i}`,
       email: `agent${i}@itsm.com`,
-      password: "hashed_password",
+      password: bcrypt.hashSync("password", 10),
       roleId: agentRole.id,
     });
   }
@@ -71,7 +72,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Employee ${i}`,
       email: `employee${i}@company.com`,
-      password: "hashed_password",
+      password: bcrypt.hashSync("password", 10),
       roleId: employeeRole.id,
     });
   }
