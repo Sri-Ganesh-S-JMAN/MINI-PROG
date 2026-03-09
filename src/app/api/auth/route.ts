@@ -1,66 +1,64 @@
-﻿import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-
+﻿import { NextResponse } from "next/server"
+import { Pool } from "pg"
+import jwt from "jsonwebtoken"
+ 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+})
+ 
 export async function POST(req: Request) {
+ 
   try {
-    const { email, password } = await req.json();
-
-    // 1️⃣ Basic validation
-    if (!email || !password) {
+ 
+    const { email, password } = await req.json()
+ 
+    // find user in database
+    const result = await pool.query(
+      'SELECT * FROM "User" WHERE email = $1',
+      [email]
+    )
+ 
+    // if user not found
+    if (result.rows.length === 0) {
       return NextResponse.json(
-        { message: "Email and password required" },
-        { status: 400 }
-      );
-    }
-
-    // 2️⃣ Dummy users (Replace with DB later)
-    const users = [
-      {
-        email: "admin@test.com",
-        password: "admin123",
-        role: "Admin",
-      },
-      {
-        email: "user@test.com",
-        password: "user123",
-        role: "User",
-      },
-    ];
-
-    const user = users.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    // 3️⃣ If no user found
-    if (!user) {
-      return NextResponse.json(
-        { message: "Invalid email or password ❌" },
+        { message: "Invalid email or password" },
         { status: 401 }
-      );
+      )
     }
-
-    // 4️⃣ Generate JWT
+ 
+    const user = result.rows[0]
+ 
+    // check password
+    if (user.password !== password) {
+      return NextResponse.json(
+        { message: "Invalid email or password" },
+        { status: 401 }
+      )
+    }
+ 
+    // create JWT token
     const token = jwt.sign(
-      { userId: 1, role: user.role },
+      {
+        id: user.id,
+        role: user.roleid
+      },
       process.env.JWT_SECRET!,
-      { expiresIn: "1h" }
-    );
-
-    const response = NextResponse.json({
-      message: "Login successful ✅",
-    });
-
-    response.cookies.set("token", token, {
-      httpOnly: true,
-      path: "/",
-    });
-
-    return response;
-  } catch (error) {
+      { expiresIn: "1d" }
+    )
+ 
+    return NextResponse.json({
+      token,
+      role: user.roleid
+    })
+ 
+  } catch (error:any) {
+ 
+    console.error(error)
+ 
     return NextResponse.json(
-      { message: "Something went wrong" },
+      { message: "error message" },
       { status: 500 }
-    );
+    )
   }
 }
 

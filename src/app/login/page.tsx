@@ -1,9 +1,10 @@
 ﻿"use client";
-
+ 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
+ 
 export default function LoginPage() {
+ 
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -40,7 +41,7 @@ export default function LoginPage() {
       console.error("Login error:", err);
     }
   };
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,#6B46C1,#4338CA)] px-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
@@ -53,20 +54,23 @@ export default function LoginPage() {
         </p>
 
         <form onSubmit={handleLogin} className="space-y-4">
+ 
           <input
             type="email"
             placeholder="Email"
             className="w-full p-3 border rounded-lg"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
-
+ 
           <input
             type="password"
             placeholder="Password"
             className="w-full p-3 border rounded-lg"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
 
           {error && (
@@ -79,8 +83,11 @@ export default function LoginPage() {
           >
             Login
           </button>
+ 
         </form>
       </div>
+ 
     </div>
   );
 }
+ 
