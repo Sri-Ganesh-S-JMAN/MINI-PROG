@@ -1,31 +1,45 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import jwt from "jsonwebtoken"
+import next from "next"
+ 
+export function middleware(req: NextRequest) {
+ 
+  const token = req.cookies.get("token")?.value
+  const path = req.nextUrl.pathname
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get("token")?.value;
+  if (path==="/login")
+  {
+    return NextResponse.next();
+  }
+
 
   if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", req.url))
   }
-
+ 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-
-    // Admin-only route protection
-    if (
-      request.nextUrl.pathname.startsWith("/dashboard/users") &&
-      decoded.role !== "Admin"
-    ) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+    const decoded:any = jwt.verify(token, process.env.JWT_SECRET!)
+ 
+    if(decoded.role === "ADMIN"){
+      if(req.nextUrl.pathname === "/login"){
+        return NextResponse.redirect(new URL("/dashboard", req.url))
+      }
     }
-
-    return NextResponse.next();
-  } catch (err) {
-    return NextResponse.redirect(new URL("/login", request.url));
+ 
+    if(decoded.role === "USER"){
+      if(req.nextUrl.pathname === "/login"){
+        return NextResponse.redirect(new URL("/tickets", req.url))
+      }
+    }
+ 
+  } catch {
+    return NextResponse.redirect(new URL("/login", req.url))
   }
+ 
+  return NextResponse.next()
 }
-
+ 
 export const config = {
-  matcher: ["/dashboard/:path*"],
-};
+  matcher: ["/dashboard/:path*","/tickets/:path*"]
+}
