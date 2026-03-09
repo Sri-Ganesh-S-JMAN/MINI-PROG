@@ -2,7 +2,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { Ticket, TicketStatus, TicketPriority } from "@/types/dashboard";
+import { Ticket } from "@/types/dashboard";
 import { ArrowUpRight, Clock, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -10,7 +10,10 @@ interface RecentTicketsProps {
   tickets: Ticket[];
 }
 
-const statusConfig: Record<TicketStatus, { label: string; className: string }> = {
+type LowercaseTicketStatus = "open" | "in_progress" | "resolved" | "closed";
+type LowercasePriority = "low" | "medium" | "high" | "critical";
+
+const statusConfig: Record<LowercaseTicketStatus, { label: string; className: string }> = {
   open: {
     label: "Open",
     className: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
@@ -29,7 +32,7 @@ const statusConfig: Record<TicketStatus, { label: string; className: string }> =
   },
 };
 
-const priorityConfig: Record<TicketPriority, { dot: string; label: string }> = {
+const priorityConfig: Record<LowercasePriority, { dot: string; label: string }> = {
   critical: { dot: "bg-rose-500", label: "Critical" },
   high: { dot: "bg-orange-500", label: "High" },
   medium: { dot: "bg-amber-400", label: "Medium" },
@@ -37,7 +40,7 @@ const priorityConfig: Record<TicketPriority, { dot: string; label: string }> = {
 };
 
 export function RecentTickets({ tickets }: RecentTicketsProps) {
-  const [filter, setFilter] = useState<TicketStatus | "all">("all");
+  const [filter, setFilter] = useState<LowercaseTicketStatus | "all">("all");
 
   const filtered = filter === "all" ? tickets : tickets.filter((t) => t.status === filter);
 

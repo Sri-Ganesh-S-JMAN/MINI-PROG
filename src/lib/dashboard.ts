@@ -141,6 +141,7 @@ export async function getRecentTickets(limit = 10) {
     reporter: t.createdBy.name,
     createdAt: t.createdAt,
     updatedAt: t.updatedAt,
+    tags: [],
   }));
 }
 
@@ -170,6 +171,7 @@ export async function getRecentApprovals(limit = 6) {
     status: mapRequestStatus(r.status),
     type: "Asset Request",
     createdAt: r.createdAt,
+    dueDate: new Date(r.createdAt.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days from creation
   }));
 }
 
