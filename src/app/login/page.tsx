@@ -6,13 +6,15 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
  
   const router = useRouter();
- 
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
- 
+  const [error, setError] = useState("");
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
- 
+    setError("");
+
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -20,50 +22,43 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Important: ensure cookies are sent/received
       });
- 
-      // if API failed
+
+      const data = await res.json();
+
       if (!res.ok) {
-        const text = await res.text();
-        alert(text || "Login failed");
+        setError(data.message);
         return;
       }
- 
-      const data = await res.json();
-      console.log("Login response:", data);
-      // store JWT token
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
- 
-      // role-based redirect
-      if (data.user?.role === "1") {
-        router.push("/dashboard");
-      } else {
-        router.push("/tickets");
-      }
- 
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Something went wrong during login");
+
+      localStorage.setItem("token", data.token);
+
+      // Force a hard redirect to ensure cookie is processed
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setError("Login failed. Please try again.");
+      console.error("Login error:", err);
     }
   };
  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-right from-indigo-500 to-purple-600 px-4">
- 
-      <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md">
- 
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,#6B46C1,#4338CA)] px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center text-purple-700 mb-2">
+          JDESK
+        </h1>
+
+        <p className="text-center text-gray-500 mb-6">
           Welcome Back 👋
-        </h2>
- 
+        </p>
+
         <form onSubmit={handleLogin} className="space-y-4">
  
           <input
             type="email"
             placeholder="Email"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full p-3 border rounded-lg"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -72,25 +67,24 @@ export default function LoginPage() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full p-3 border rounded-lg"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
- 
+
+          {error && (
+            <p className="text-red-500 text-sm">{error}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition duration-300"
+            className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700"
           >
             Login
           </button>
  
         </form>
- 
-        <p className="text-center text-gray-500 mt-4 text-sm">
-          Admin: admin@test.com | 123456
-        </p>
- 
       </div>
  
     </div>
