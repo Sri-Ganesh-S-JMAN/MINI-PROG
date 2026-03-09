@@ -15,14 +15,14 @@ import {
   getTicketStatusBreakdown,
   getTicketPriorityBreakdown,
 } from "@/lib/dashboard";
-
+ 
 export const metadata = {
   title: "Dashboard — MINI-PROG",
   description: "Overview of tickets, approvals, and system status",
 };
-
+ 
 export const revalidate = 60;
-
+ 
 export default async function DashboardPage() {
   const [
     stats,
@@ -41,18 +41,18 @@ export default async function DashboardPage() {
     getTicketStatusBreakdown(),
     getTicketPriorityBreakdown(),
   ]);
-
+ 
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-
+ 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
+ 
         <div className="mb-8">
           <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-1">{today}</p>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
             Here&apos;s what&apos;s happening across your workspace today.
           </p>
         </div>
-
+ 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard
             title="Open Tickets"
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
             iconColor="text-emerald-500"
           />
         </div>
-
+ 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
           <div className="lg:col-span-2">
             <WeeklyChart data={weeklyData} />
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <StatusBreakdown
             title="By Status"
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
             total={stats.totalTickets}
           />
         </div>
-
+ 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
             <RecentTickets tickets={tickets} />
@@ -163,7 +163,7 @@ export default async function DashboardPage() {
             <ActivityFeed activities={activity} />
           </div>
         </div>
-
+ 
       </div>
     </div>
   );

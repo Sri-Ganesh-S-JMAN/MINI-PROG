@@ -1,7 +1,7 @@
 ﻿// src/app/layout.tsx
 import "./globals.css";
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html>
       <body>

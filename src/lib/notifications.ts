@@ -7,7 +7,7 @@ import { prisma } from "./prisma";
 export interface CreateNotificationParams {
   userId: string;
   message: string;
-  ticketId?: number;
+  ticketId?: number; // kept for API compatibility but not stored
 }
 
 /**
@@ -18,7 +18,6 @@ export async function createNotification(params: CreateNotificationParams) {
     data: {
       message: params.message,
       userId: parseInt(params.userId),
-      ticketId: params.ticketId,
     },
   });
 }
@@ -37,7 +36,6 @@ export async function createNotifications(
       data: {
         message: params.message,
         userId: parseInt(userId),
-        ticketId: params.ticketId,
       },
     })
   );
