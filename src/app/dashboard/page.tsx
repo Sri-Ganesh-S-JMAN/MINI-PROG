@@ -1,8 +1,4 @@
-﻿// ─── Dashboard Page (Real Data) ──────────────────────────────────────────────
-// src/app/dashboard/page.tsx
-// This is a React Server Component — data fetching happens server-side
-
-import React from "react";
+﻿import React from "react";
 import { Ticket, CheckSquare, AlertTriangle, Clock, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { RecentTickets } from "@/components/dashboard/RecentTickets";
