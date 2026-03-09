@@ -1,4 +1,4 @@
-make// Prisma Client Generator
+// Prisma Client Generator
 generator client {
   provider = "prisma-client-js"
   engineType = "binary"

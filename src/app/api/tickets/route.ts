@@ -21,7 +21,7 @@ const SLA_HOURS: Record<string, number> = {
 // GET: List tickets
 export async function GET(request: NextRequest) {
     try {
-        const user = getCurrentUser();
+        const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const { searchParams } = new URL(request.url);
@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
         const userIdInt = parseInt(user.userId, 10);
         
         const roleFilter =
-            user.role === "EMPLOYEE"
+            user.roleId === 1  // USER
                 ? { createdById: userIdInt }
-                : user.role === "AGENT"
+                : user.roleId === 5  // AGENT
                     ? { assignedToId: userIdInt }
-                    : {};
+                    : {};  // ADMIN (4) or MANAGER (6) - see all tickets
 
         const where = {
             ...roleFilter,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 // POST: Create ticket
 export async function POST(request: NextRequest) {
     try {
-        const user = getCurrentUser();
+        const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const { title, description, priority, category } = await request.json();

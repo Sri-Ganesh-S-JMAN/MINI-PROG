@@ -1,7 +1,8 @@
 // ─── Dashboard Types ────────────────────────────────────────────────────────
 
-export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
-export type TicketPriority = "low" | "medium" | "high" | "critical";
+export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+export type Priority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type ApprovalStatus = "pending" | "approved" | "rejected" | "escalated";
 
 export interface Ticket {

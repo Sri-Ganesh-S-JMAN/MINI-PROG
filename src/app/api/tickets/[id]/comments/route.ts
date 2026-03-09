@@ -13,7 +13,7 @@ export async function GET(
     _request: NextRequest,
     { params }: { params: { id: string } }
 ) {
-    const user = getCurrentUser();
+    const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const ticketId = parseInt(params.id, 10);
@@ -21,7 +21,6 @@ export async function GET(
     const comments = await prisma.ticketComment.findMany({
         where: {
             ticketId: ticketId,
-            isInternal: user.role === "EMPLOYEE" ? false : undefined,
         },
         include: { 
             user: { select: { id: true, name: true, role: true } },
@@ -53,7 +52,7 @@ export async function POST(
     { params }: { params: { id: string } }
 ) {
     try {
-        const user = getCurrentUser();
+        const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const ticketId = parseInt(params.id, 10);
@@ -63,7 +62,7 @@ export async function POST(
             return NextResponse.json({ error: "Comment content is required." }, { status: 400 });
         }
 
-        const internal = (user.role !== "EMPLOYEE") && !!isInternal;
+        const internal = (user.roleId !== 1) && !!isInternal;
 
         const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
         if (!ticket) return NextResponse.json({ error: "Ticket not found." }, { status: 404 });

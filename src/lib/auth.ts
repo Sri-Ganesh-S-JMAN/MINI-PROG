@@ -1,35 +1,61 @@
 /**
- * Authentication utilities for getting the current user
- * In a real app, this would validate session tokens/JWTs
- * For now, provides a mock implementation that works with the seed data
+ * Authentication utilities for getting the current user from JWT cookies
  */
+
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 
 export interface CurrentUser {
   userId: string;
   name: string;
   email: string;
-  role: "EMPLOYEE" | "AGENT" | "ADMIN";
+  role: "USER" | "AGENT" | "ADMIN" | "MANAGER";
+  roleId: number;
 }
 
-export function getCurrentUser(): CurrentUser | null {
-  // In a real NextAuth implementation, this would come from the session
-  // For this implementation, we'll check for a header that can be set for testing
-  // or use a simple mock for development
-  
-  // This is a placeholder - in production this would validate JWT/session
-  // The API routes expect this to return user info or null
-  
-  // Mock user for development - can be overridden by headers in API calls
-  return {
-    userId: "1",
-    name: "Test User",
-    email: "test@example.com",
-    role: "ADMIN",
-  };
+// Map roleId to role name
+const ROLE_MAP: Record<number, "USER" | "AGENT" | "ADMIN" | "MANAGER"> = {
+  1: "USER",      // Regular employee
+  4: "ADMIN",     // Administrator
+  5: "AGENT",     // IT Support Agent
+  6: "MANAGER",   // Manager
+};
+
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return null;
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: number;
+      role: number;
+      name: string;    // ✅ From JWT
+      email: string;   // ✅ From JWT
+      iat: number;
+      exp: number;
+    };
+
+    const roleName = ROLE_MAP[decoded.role] || "USER";
+
+    return {
+      userId: decoded.id.toString(),
+      name: decoded.name,
+      email: decoded.email,
+      role: roleName,
+      roleId: decoded.role,
+    };
+
+  } catch (error) {
+    console.error("Auth error:", error);
+    return null;
+  }
 }
 
-export function getCurrentUserId(): string | null {
-  const user = getCurrentUser();
+export async function getCurrentUserId(): Promise<string | null> {
+  const user = await getCurrentUser();
   return user?.userId ?? null;
 }
-

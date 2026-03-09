@@ -35,7 +35,11 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
 
       // Force a hard redirect to ensure cookie is processed
-      window.location.href = "/dashboard";
+      if (data.role === 1) {
+        router.push("/dashboard");
+      } else {
+        router.push("/tickets");
+      }
     } catch (err) {
       setError("Login failed. Please try again.");
       console.error("Login error:", err);
