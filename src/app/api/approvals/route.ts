@@ -1,13 +1,16 @@
-﻿﻿import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function PATCH(req: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await req.json();
+    const { requestId, status } = body;
 
-    const { requestId, approvedById, status } = body;
-
-    if (!requestId || !approvedById || !status) {
+    if (!requestId || !status) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -16,7 +19,7 @@ export async function PATCH(req: Request) {
 
     // 1️⃣ Verify the approver exists
     const approver = await prisma.user.findUnique({
-      where: { id: Number(approvedById) },
+      where: { id: parseInt(user.userId, 10) },
       include: { role: true },
     });
 
