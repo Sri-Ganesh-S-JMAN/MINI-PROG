@@ -23,10 +23,9 @@
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-auth": "^4.24.13",
-
+    "nextjs-toploader": "^3.9.17",
     "pg": "^8.20.0",
     "prisma": "^7.4.2",
-
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
