@@ -34,3 +34,5 @@ stages:
         tags: |
           $(tag)
           latest
+        buildArguments: |
+          DATABASE_URL=$(DATABASE_URL)
