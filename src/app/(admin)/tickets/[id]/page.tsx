@@ -10,6 +10,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { TicketDetail, TicketStatus, Priority, Role } from "@/types/dashboard";
 import { getSLAStatus, formatSLATimeLeft } from "@/lib/sla";
+import { DeleteTicketButton } from "@/components/dashboard/DeleteTicketButton";
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
     OPEN: "bg-white border border-gray-200 text-gray-900",
@@ -148,7 +149,7 @@ export default function TicketDetailPage() {
             <div className="grid grid-cols-3 gap-6">
                 <div className="col-span-2 space-y-4">
                     <div className="card p-6">
-                        <div className="flex items-start gap-4 mb-5 border-b border-gray-100 pb-5">
+                        <div className="flex items-start justify-between gap-4 mb-5 border-b border-gray-100 pb-5">
                             <div className="flex-1">
                                 <h1 className="text-xl font-semibold tracking-tight text-gray-900">{ticket.title}</h1>
                                 <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -161,6 +162,9 @@ export default function TicketDetailPage() {
                                     <span className="text-xs text-gray-400 font-medium px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100">{ticket.category}</span>
                                 </div>
                             </div>
+                            {(userRole === "ADMIN" || ticket.createdById.toString() === userId) && (
+                                <DeleteTicketButton ticketId={ticket.id} redirectAfter={true} />
+                            )}
                         </div>
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
                         <div className="mt-5 pt-4 text-xs text-gray-400 flex flex-wrap gap-4 border-t border-gray-50">
@@ -185,13 +189,13 @@ export default function TicketDetailPage() {
                                     >
                                         <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                                             <span className="text-gray-600 text-xs font-semibold">
-                                                {c.author.name.charAt(0).toUpperCase()}
+                                                {c.user?.name?.charAt(0).toUpperCase() || "?"}
                                             </span>
                                         </div>
                                         <div className="flex-1 bg-gray-50 border border-gray-100 rounded-lg p-3.5">
                                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                                <span className="text-sm font-semibold text-gray-900">{c.author.name}</span>
-                                                <span className="text-xs text-gray-500 capitalize">{c.author.role.toLowerCase()}</span>
+                                                <span className="text-sm font-semibold text-gray-900">{c.user?.name || "Unknown"}</span>
+                                                <span className="text-xs text-gray-500 capitalize">{c.user?.role?.name?.toLowerCase() || "user"}</span>
                                                 {c.isInternal && (
                                                     <span className="text-[10px] font-medium bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wide">Internal</span>
                                                 )}

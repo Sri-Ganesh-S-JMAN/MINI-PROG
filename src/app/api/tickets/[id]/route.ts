@@ -120,12 +120,23 @@ export async function DELETE(
 ) {
     try {
         const user = await getCurrentUser();
-        if (!user || user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
         }
 
         const { id } = await params;
         const ticketId = parseInt(id, 10);
+
+        const existingTicket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+        if (!existingTicket) return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
+
+        // Allow deletion only if user is ADMIN or the original creator
+        if (user.role !== "ADMIN" && existingTicket.createdById !== parseInt(user.userId, 10)) {
+            return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+        }
+
+        // Delete associated comments first to avoid foreign key constraint errors
+        await prisma.ticketComment.deleteMany({ where: { ticketId } });
         await prisma.ticket.delete({ where: { id: ticketId } });
         return NextResponse.json({ message: "Ticket deleted." });
     } catch (error) {

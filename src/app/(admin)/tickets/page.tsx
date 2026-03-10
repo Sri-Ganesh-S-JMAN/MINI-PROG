@@ -9,6 +9,7 @@ export const revalidate = 0;
 
 import { getCurrentUser } from "@/lib/auth";
 import { getSLAStatus, formatSLATimeLeft } from "@/lib/sla";
+import { DeleteTicketButton } from "@/components/dashboard/DeleteTicketButton";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { TicketStatus, Priority } from "@/types/dashboard";
@@ -42,11 +43,10 @@ const SLA_COLORS: Record<string, string> = {
     resolved: "text-gray-400",
 };
 
-export default async function TicketsPage({
-    searchParams,
-}: {
-    searchParams: { status?: string; page?: string };
-}) {
+export default async function TicketsPage(
+    props: { searchParams: Promise<{ status?: string; page?: string }> }
+) {
+    const searchParams = await props.searchParams;
     const user = await getCurrentUser();
     if (!user) redirect("/login");
 
@@ -149,6 +149,7 @@ export default async function TicketsPage({
                                     <th className="px-6 py-3">Assigned To</th>
                                     <th className="px-6 py-3">Comments</th>
                                     <th className="px-6 py-3">Created</th>
+                                    <th className="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 text-gray-600">
@@ -156,32 +157,53 @@ export default async function TicketsPage({
                                     const slaStatus = getSLAStatus(ticket.slaDeadline, ticket.resolvedAt);
                                     const slaTime = formatSLATimeLeft(ticket.slaDeadline, ticket.resolvedAt);
                                     return (
-                                        <tr key={ticket.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <Link href={`/tickets/${ticket.id}`} className="font-medium text-gray-900 hover:text-black transition">
-                                                    {ticket.title}
+                                        <tr key={ticket.id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <td className="px-0 py-0">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    <span className="font-medium text-gray-900 group-hover:text-black transition">
+                                                        {ticket.title}
+                                                    </span>
+                                                    <p className="text-xs text-gray-400 mt-0.5">{ticket.category}</p>
                                                 </Link>
-                                                <p className="text-xs text-gray-400 mt-0.5">{ticket.category}</p>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[ticket.status as string]}`}>
-                                                    {ticket.status.replace("_", " ")}
-                                                </span>
+                                            <td className="px-0 py-0">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[ticket.status as string]}`}>
+                                                        {ticket.status.replace("_", " ")}
+                                                    </span>
+                                                </Link>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[ticket.priority as string]}`}>
-                                                    {ticket.priority}
-                                                </span>
+                                            <td className="px-0 py-0">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[ticket.priority as string]}`}>
+                                                        {ticket.priority}
+                                                    </span>
+                                                </Link>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`text-xs font-medium ${SLA_COLORS[slaStatus]}`}>{slaTime}</span>
+                                            <td className="px-0 py-0">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    <span className={`text-xs font-medium ${SLA_COLORS[slaStatus]}`}>{slaTime}</span>
+                                                </Link>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
-                                                {ticket.assignedTo?.name ?? <span className="text-gray-400 italic">Unassigned</span>}
+                                            <td className="px-0 py-0 text-sm text-gray-600">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    {ticket.assignedTo?.name ?? <span className="text-gray-400 italic">Unassigned</span>}
+                                                </Link>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{ticket._count.comments}</td>
-                                            <td className="px-6 py-4 text-xs text-gray-400">
-                                                {new Date(ticket.createdAt).toLocaleDateString()}
+                                            <td className="px-0 py-0 text-sm text-gray-500">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    {ticket._count.comments}
+                                                </Link>
+                                            </td>
+                                            <td className="px-0 py-0 text-xs text-gray-400">
+                                                <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
+                                                    {new Date(ticket.createdAt).toLocaleDateString()}
+                                                </Link>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                {(user.role === "ADMIN" || ticket.createdById === userIdInt) && (
+                                                    <DeleteTicketButton ticketId={ticket.id} />
+                                                )}
                                             </td>
                                         </tr>
                                     );
