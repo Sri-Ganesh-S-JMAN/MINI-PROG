@@ -1,6 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import Link from "next/link";
+import { IdBadge } from "@/components/IdBadge";
+
+export default async function UsersPage(
+  props: { searchParams: Promise<{ search?: string }> }
+) {
+  const searchParams = await props.searchParams;
+  let whereClause = {};
+
+  if (searchParams.search) {
+      const searchId = parseInt(searchParams.search, 10);
+      if (!isNaN(searchId)) {
+          whereClause = { id: searchId };
+      }
+  }
 
   const users = await prisma.user.findMany({
     where: whereClause,
@@ -10,20 +24,37 @@ import Link from "next/link";
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-start sm:items-center">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold tracking-tight text-black">Users</h1>
           <p className="text-sm text-gray-500">Manage individuals and their roles in your workspace.</p>
         </div>
-        <Link
-          href="/users/create"
-          className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black w-max"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add User
-        </Link>
+        
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+            <form className="relative w-full sm:w-64" action="/users" method="GET">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input
+                    type="search"
+                    name="search"
+                    placeholder="Search by ID..."
+                    defaultValue={searchParams.search || ""}
+                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all shadow-sm"
+                />
+            </form>
+            <Link
+            href="/users/create"
+            className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black flex-shrink-0"
+            >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="hidden sm:inline">Add User</span>
+            </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
