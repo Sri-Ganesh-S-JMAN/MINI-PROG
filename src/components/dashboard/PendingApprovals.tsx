@@ -11,22 +11,22 @@ interface PendingApprovalsProps {
 }
 
 const statusConfig: Record<ApprovalStatus, { icon: React.FC<{ className?: string }>; label: string; className: string }> = {
-  pending: {
+  PENDING: {
     icon: Clock,
     label: "Pending",
     className: "bg-gray-100 text-black border border-gray-200",
   },
-  approved: {
+  APPROVED: {
     icon: CheckCircle2,
     label: "Approved",
     className: "bg-gray-50 text-gray-700 border border-gray-200",
   },
-  rejected: {
+  REJECTED: {
     icon: XCircle,
     label: "Rejected",
     className: "bg-transparent text-gray-500 border border-gray-200",
   },
-  escalated: {
+  ESCALATED: {
     icon: AlertTriangle,
     label: "Escalated",
     className: "bg-black text-white border border-black",
@@ -42,7 +42,7 @@ const typeColors: Record<string, string> = {
 };
 
 function getDueBadge(dueDate: Date | undefined | null, status: ApprovalStatus) {
-  if (status !== "pending" || !dueDate) return null;
+  if (status !== "PENDING" || !dueDate) return null;
   const parsed = new Date(dueDate);
   if (isNaN(parsed.getTime())) return null;
   if (isPast(parsed)) return <span className="text-xs font-bold text-black border border-black px-1.5 py-0.5 rounded-sm">Overdue</span>;
@@ -53,7 +53,7 @@ function getDueBadge(dueDate: Date | undefined | null, status: ApprovalStatus) {
 
 export function PendingApprovals({ approvals }: PendingApprovalsProps) {
   const sorted = [...approvals].sort((a, b) => {
-    const order: ApprovalStatus[] = ["pending", "escalated", "approved", "rejected"];
+    const order: ApprovalStatus[] = ["PENDING", "ESCALATED", "APPROVED", "REJECTED"];
     return order.indexOf(a.status) - order.indexOf(b.status);
   });
 

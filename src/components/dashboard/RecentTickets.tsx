@@ -2,7 +2,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { Ticket } from "@/types/dashboard";
+import { Ticket, TicketStatus, Priority } from "@/types/dashboard";
 import { ArrowUpRight, Clock, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -10,37 +10,34 @@ interface RecentTicketsProps {
   tickets: Ticket[];
 }
 
-type LowercaseTicketStatus = "open" | "in_progress" | "resolved" | "closed";
-type LowercasePriority = "low" | "medium" | "high" | "critical";
-
-const statusConfig: Record<LowercaseTicketStatus, { label: string; className: string }> = {
-  open: {
+const statusConfig: Record<TicketStatus, { label: string; className: string }> = {
+  OPEN: {
     label: "Open",
     className: "bg-black text-white border border-black",
   },
-  in_progress: {
+  IN_PROGRESS: {
     label: "In Progress",
     className: "bg-gray-100 text-gray-800 border border-gray-200",
   },
-  resolved: {
+  RESOLVED: {
     label: "Resolved",
     className: "bg-gray-50 text-gray-600 border border-gray-200",
   },
-  closed: {
+  CLOSED: {
     label: "Closed",
     className: "bg-transparent text-gray-500 border border-gray-200",
   },
 };
 
-const priorityConfig: Record<LowercasePriority, { dot: string; label: string }> = {
-  critical: { dot: "bg-black", label: "Critical" },
-  high: { dot: "bg-gray-700", label: "High" },
-  medium: { dot: "bg-gray-400", label: "Medium" },
-  low: { dot: "bg-gray-200", label: "Low" },
+const priorityConfig: Record<Priority, { dot: string; label: string }> = {
+  CRITICAL: { dot: "bg-black", label: "Critical" },
+  HIGH: { dot: "bg-gray-700", label: "High" },
+  MEDIUM: { dot: "bg-gray-400", label: "Medium" },
+  LOW: { dot: "bg-gray-200", label: "Low" },
 };
 
 export function RecentTickets({ tickets }: RecentTicketsProps) {
-  const [filter, setFilter] = useState<LowercaseTicketStatus | "all">("all");
+  const [filter, setFilter] = useState<TicketStatus | "all">("all");
 
   const filtered = filter === "all" ? tickets : tickets.filter((t) => t.status === filter);
 
@@ -62,7 +59,7 @@ export function RecentTickets({ tickets }: RecentTicketsProps) {
 
       {/* Filter Tabs */}
       <div className="px-6 pb-3 flex gap-2 overflow-x-auto scrollbar-none">
-        {(["all", "open", "in_progress", "resolved"] as const).map((s) => (
+        {(["all", "OPEN", "IN_PROGRESS", "RESOLVED"] as const).map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
@@ -72,7 +69,7 @@ export function RecentTickets({ tickets }: RecentTicketsProps) {
                 : "bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-black"
             }`}
           >
-            {s === "all" ? "All" : s === "in_progress" ? "In Progress" : s.charAt(0).toUpperCase() + s.slice(1)}
+            {s === "all" ? "All" : s === "IN_PROGRESS" ? "In Progress" : s === "OPEN" ? "Open" : s === "RESOLVED" ? "Resolved" : s}
           </button>
         ))}
       </div>

@@ -11,25 +11,17 @@ import Link from "next/link";
 import type { TicketDetail, TicketStatus, Priority, Role } from "@/types/dashboard";
 import { getSLAStatus, formatSLATimeLeft } from "@/lib/sla";
 
-const STATUS_COLORS: { [key: string]: string } = {
-    open: "bg-blue-100 text-blue-700",
-    in_progress: "bg-yellow-100 text-yellow-700",
-    resolved: "bg-green-100 text-green-700",
-    closed: "bg-slate-100 text-slate-500",
+const STATUS_COLORS: Record<TicketStatus, string> = {
     OPEN: "bg-blue-100 text-blue-700",
     IN_PROGRESS: "bg-yellow-100 text-yellow-700",
     RESOLVED: "bg-green-100 text-green-700",
     CLOSED: "bg-slate-100 text-slate-500",
 };
-const PRIORITY_COLORS: { [key: string]: string } = {
+const PRIORITY_COLORS: Record<Priority, string> = {
     CRITICAL: "bg-red-100 text-red-700",
     HIGH: "bg-orange-100 text-orange-700",
     MEDIUM: "bg-yellow-100 text-yellow-700",
     LOW: "bg-slate-100 text-slate-500",
-    critical: "bg-red-100 text-red-700",
-    high: "bg-orange-100 text-orange-700",
-    medium: "bg-yellow-100 text-yellow-700",
-    low: "bg-slate-100 text-slate-500",
 };
 const SLA_BG: Record<string, string> = {
     on_track: "bg-green-50 border-green-200 text-green-700",
