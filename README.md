@@ -35,7 +35,7 @@ When a user interacts with the app, the flow generally goes like this:
 
 Here is a breakdown of the 6 modules, who worked on them, and how they function.
 
-### 1. Dashboard & Integration (Gaurav's Module)
+### 1. Dashboard & Integration
 This is the central hub of the app. Once a user logs in, they see a dashboard that summarizes what's happening.
 - **What it does**: Displays activity feeds, statistic cards (like "Total Open Tickets"), and handles the main layout (sidebar, navigation) that wraps around all other pages.
 - **Where to find the code**: 
