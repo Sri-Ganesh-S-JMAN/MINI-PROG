@@ -257,26 +257,22 @@ export default function TicketDetailPage() {
                     {isStaff && (
                         <div className="card p-5">
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">Status</p>
-                            <select
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white shadow-sm transition-shadow"
-                                value={ticket.status}
-                                onChange={(e) => updateTicket({ status: e.target.value })}
-                                disabled={saving}
-                            >
+                            <div className="flex flex-col gap-2">
                                 {STATUSES.map((s) => (
-                                    <option key={s} value={s}>{s.replace("_", " ")}</option>
+                                    <button
+                                        key={s}
+                                        onClick={() => updateTicket({ status: s })}
+                                        disabled={saving || ticket.status === s}
+                                        className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:cursor-not-allowed shadow-sm ${
+                                            ticket.status === s
+                                                ? "bg-black text-white border-black"
+                                                : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                                        }`}
+                                    >
+                                        {s.replace("_", " ")}
+                                    </button>
                                 ))}
-                            </select>
-
-                            {ticket.status !== "RESOLVED" && ticket.status !== "CLOSED" && (
-                                <button
-                                    onClick={() => updateTicket({ status: "RESOLVED" })}
-                                    disabled={saving}
-                                    className="w-full mt-4 bg-white border border-gray-200 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 shadow-sm"
-                                >
-                                    {saving ? "Updating..." : "Mark as Resolved"}
-                                </button>
-                            )}
+                            </div>
                         </div>
                     )}
 
