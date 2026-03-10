@@ -99,6 +99,16 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
         {/* Nav */}
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {navItems.map(({ href, icon: Icon, label }) => {
+            // Role-based visibility logic
+            // ADMIN and MANAGER can see everything
+            // USER and AGENT can only see Tickets and Asset Requests 
+            const isUserOrAgent = user?.role === "USER" || user?.role === "AGENT";
+            const isAllowedForUser = href === "/tickets" || href === "/asset-requests";
+
+            if (isUserOrAgent && !isAllowedForUser) {
+               return null; // Skip rendering unauthorized tabs
+            }
+
             const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
             return (
               <Link

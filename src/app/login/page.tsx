@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
  
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -50,50 +50,67 @@ export default function LoginPage() {
   };
  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[linear-gradient(135deg,#6B46C1,#4338CA)] px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-purple-700 mb-2">
-          JDESK
+    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] font-sans px-4">
+      <div className="bg-white p-8 sm:p-10 rounded-xl border border-gray-200 shadow-sm w-full max-w-md">
+        
+        <div className="flex justify-center mb-8">
+           <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+        </div>
+
+        <h1 className="text-2xl font-semibold text-center text-black mb-1.5 tracking-tight">
+          Welcome back
         </h1>
 
-        <p className="text-center text-gray-500 mb-6">
-          Welcome Back 👋
+        <p className="text-center text-sm text-gray-500 mb-8">
+          Enter your details to sign in to your account
         </p>
 
         <form onSubmit={handleLogin} className="space-y-4">
- 
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full p-3 border rounded-lg"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
- 
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 border rounded-lg"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+  
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
           {error && (
-            <p className="text-red-500 text-sm">{error}</p>
+            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+               {error}
+            </div>
           )}
 
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700"
+            className="w-full bg-black text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black mt-2"
           >
-            Login
+            Sign In
           </button>
- 
+  
         </form>
       </div>
- 
+  
     </div>
   );
 }

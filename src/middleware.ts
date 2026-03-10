@@ -32,15 +32,30 @@ export function middleware(request: NextRequest) {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET!); // ✅ Now token is guaranteed to be string
     
     console.log("Decoded role:", decoded.role);
+    const roleId = decoded.role;
+    
+    // Check role access for specific routes
+    // Roles: 1=USER, 5=AGENT -> Restricted to /tickets, /asset-requests, /profile
+    const isUserOrAgent = roleId === 1 || roleId === 5;
+    
+    // Protect admin-only routes
+    if (isUserOrAgent && (
+      path.startsWith("/dashboard") || 
+      path.startsWith("/assets") || 
+      path.startsWith("/users")
+    )) {
+      console.log("Unauthorized access attempt. Redirecting to tickets.");
+      return NextResponse.redirect(new URL("/tickets", request.url));
+    }
  
     // If user has valid token and is on login page, redirect based on role
     if (path === "/login") {
       // Role IDs: 1=USER, 4=ADMIN, 5=AGENT, 6=MANAGER
-      if (decoded.role === 4 || decoded.role === 6) {
+      if (roleId === 4 || roleId === 6) {
         // ADMIN or MANAGER → dashboard
         console.log("Redirecting to dashboard");
         return NextResponse.redirect(new URL("/dashboard", request.url));
-      } else if (decoded.role === 1 || decoded.role === 5) {
+      } else if (isUserOrAgent) {
         // USER or AGENT → tickets
         console.log("Redirecting to tickets");
         return NextResponse.redirect(new URL("/tickets", request.url));

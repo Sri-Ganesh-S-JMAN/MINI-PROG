@@ -9,15 +9,11 @@ resources:
 - repo: self
 
 variables:
-  # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: '2c219892-1d7f-4e67-9159-3a73b03df33b'
   imageRepository: 'sriganeshsjmanminiprog'
   containerRegistry: 'miniproj.azurecr.io'
   dockerfilePath: 'Dockerfile'
   tag: '$(Build.BuildId)'
-
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
 
 stages:
 - stage: Build
@@ -26,7 +22,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      vmImage: $(vmImageName)
+      name: 'SelfHosted'   # Use your self-hosted agent pool name
     steps:
     - task: Docker@2
       displayName: Build and push an image to container registry
@@ -37,3 +33,6 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+          latest
+        buildArguments: |
+          DATABASE_URL=$(DATABASE_URL)
