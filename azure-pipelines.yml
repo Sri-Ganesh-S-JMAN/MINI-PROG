@@ -34,5 +34,4 @@ stages:
         tags: |
           $(tag)
           latest
-        buildArguments: |
-          DATABASE_URL=$(DATABASE_URL)
+        arguments: '--build-arg DATABASE_URL=$(DATABASE_URL)'
