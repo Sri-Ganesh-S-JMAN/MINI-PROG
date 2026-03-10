@@ -11,6 +11,7 @@ export async function GET(){
     return NextResponse.json(assets);
   }
   catch(error){
+    console.error("ASSET FETCH ERROR:", error);
     return NextResponse.json(
       { error: "Failed to fetch assets" },
       { status: 500 }

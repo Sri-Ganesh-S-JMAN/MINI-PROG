@@ -3,6 +3,7 @@
 # dependencies
 /node_modules
 /.pnp
+.log
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -29,6 +30,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+debug-*.log
 
 # env files (can opt-in for committing if needed)
 .env*

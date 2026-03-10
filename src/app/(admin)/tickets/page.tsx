@@ -36,7 +36,7 @@ export default async function TicketsPage({
 }: {
     searchParams: { status?: string };
 }) {
-    const user = getCurrentUser();
+    const user = await getCurrentUser();
     if (!user) redirect("/login");
 
     const { prisma } = await import("@/lib/prisma");
@@ -44,11 +44,11 @@ export default async function TicketsPage({
     const userIdInt = parseInt(user.userId, 10);
     
     const roleFilter =
-        user.role === "EMPLOYEE"
-            ? { createdById: userIdInt }
-            : user.role === "AGENT"
-                ? { assignedToId: userIdInt }
-                : {};
+    user.roleId === 1  // USER/EMPLOYEE
+        ? { createdById: userIdInt }
+        : user.roleId === 5  // AGENT
+            ? { assignedToId: userIdInt }
+            : {};  // ADMIN (4) or MANAGER (6) - see all tickets
 
     const tickets = await prisma.ticket.findMany({
         where: {
@@ -73,7 +73,7 @@ export default async function TicketsPage({
                     <h1 className="page-title">Tickets</h1>
                     <p className="text-sm text-slate-500 mt-0.5">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</p>
                 </div>
-                {user.role !== "AGENT" && (
+                {user.roleId !== 5 && (  // AGENT
                     <Link href="/tickets/create" className="btn-primary">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -111,7 +111,7 @@ export default async function TicketsPage({
                         </svg>
                     </div>
                     <p className="text-slate-500 text-sm">No tickets found.</p>
-                    {user.role !== "AGENT" && (
+                    {user.roleId !== 5 && (
                         <Link href="/tickets/create" className="btn-primary mt-4 inline-flex">Create your first ticket</Link>
                     )}
                 </div>

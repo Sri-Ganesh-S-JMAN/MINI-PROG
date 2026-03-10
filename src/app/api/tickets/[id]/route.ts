@@ -13,30 +13,31 @@ import { createNotifications } from "@/lib/notifications";
 // GET
 export async function GET(
     _request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const user = getCurrentUser();
+        const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const ticketId = parseInt(params.id, 10);
+        const { id } = await params;
+        const ticketId = parseInt(id, 10);
         
         const ticket = await prisma.ticket.findUnique({
             where: { id: ticketId },
             include: {
-                createdBy: { select: { id: true, name: true, email: true, department: true } },
+                createdBy: { select: { id: true, name: true, email: true } },
                 assignedTo: { select: { id: true, name: true, email: true } },
                 comments: {
-                    include: { author: { select: { id: true, name: true, role: true } } },
+                    include: { user: { select: { id: true, name: true, role: true } } },
                     orderBy: { createdAt: "asc" },
-                    where: user.role === "EMPLOYEE" ? { isInternal: false } : {},
+                    where: user.roleId === 1 ? { isInternal: false } : {},
                 },
             },
         });
 
         if (!ticket) return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
 
-        if (user.role === "EMPLOYEE" && ticket.createdById !== parseInt(user.userId, 10)) {
+        if (user.roleId === 1 && ticket.createdById !== parseInt(user.userId, 10)) {
             return NextResponse.json({ error: "Forbidden." }, { status: 403 });
         }
 
@@ -50,14 +51,15 @@ export async function GET(
 // PATCH
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const user = getCurrentUser();
+        const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        if (user.role === "EMPLOYEE") return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+        if (user.roleId === 1) return NextResponse.json({ error: "Forbidden." }, { status: 403 });
 
-        const ticketId = parseInt(params.id, 10);
+        const { id } = await params;
+        const ticketId = parseInt(id, 10);
         const body = await request.json();
         const { status, priority, assignedToId } = body;
 
@@ -114,15 +116,16 @@ export async function PATCH(
 // DELETE
 export async function DELETE(
     _request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const user = getCurrentUser();
+        const user = await getCurrentUser();
         if (!user || user.role !== "ADMIN") {
             return NextResponse.json({ error: "Forbidden." }, { status: 403 });
         }
 
-        const ticketId = parseInt(params.id, 10);
+        const { id } = await params;
+        const ticketId = parseInt(id, 10);
         await prisma.ticket.delete({ where: { id: ticketId } });
         return NextResponse.json({ message: "Ticket deleted." });
     } catch (error) {

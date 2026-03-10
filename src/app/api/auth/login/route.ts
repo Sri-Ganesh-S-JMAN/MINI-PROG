@@ -1,49 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import { prisma } from "@/lib/prisma"; // ✅ Import Prisma
 
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
-    console.log("Entered Email:", email);
-    console.log("Entered Password:", password);
+    // Find user in database using Prisma
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { role: true }, // Include role information
+    });
 
-    if (!email || !password) {
+    // If user not found
+    if (!user) {
       return NextResponse.json(
-        { message: "Missing email or password ❌" },
-        { status: 400 }
-      );
-    }
-
-    const validEmail = "admin@test.com";
-    const validPassword = "admin123";
-    const role = "Admin";
-
-    if (
-      email.toLowerCase() !== validEmail.toLowerCase() ||
-      password !== validPassword
-    ) {
-      return NextResponse.json(
-        { message: "Invalid credentials ❌" },
+        { message: "Invalid email or password" },
         { status: 401 }
       );
     }
 
+    // Verify password
+    const isPasswordValid = password == user.password;
+    
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { message: "Invalid email or password" },
+        { status: 401 }
+      );
+    }
+
+    // Create JWT token
     const token = jwt.sign(
-      { userId: 1, role },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "1h" }
+      {
+        id: user.id,
+        role: user.roleId,
+        name: user.name,
+        email: user.email,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1d" }
     );
 
-    return NextResponse.json({
-      message: "Login successful ✅",
+    // Set token in HTTP-only cookie
+    const response = NextResponse.json({
+      message: "Login successful",
       token,
+      role: user.roleId,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
     });
 
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 86400, // 1 day in seconds
+    });
+
+    return response;
+    
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
+
     return NextResponse.json(
-      { message: "Server error ❌" },
+      { message: "Server error" },
       { status: 500 }
     );
   }

@@ -1,54 +1,66 @@
 // ─── Dashboard Types ────────────────────────────────────────────────────────
 
-export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
-export type Priority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-export type Role = "EMPLOYEE" | "AGENT" | "ADMIN";
-export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "ESCALATED";
+export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+export type Priority = "low" | "medium" | "high" | "critical";
+export type TicketPriority = "low" | "medium" | "high" | "critical";
+export type ApprovalStatus = "pending" | "approved" | "rejected" | "escalated";
+export type Role = "USER" | "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER";
 
 export interface Ticket {
   id: string;
   title: string;
   description: string;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  priority: "low" | "medium" | "high" | "critical";
+  assignee: string;
+  reporter: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tags?: string[];
+}
+
+export interface TicketDetail {
+  id: number;
+  title: string;
+  description: string;
   status: TicketStatus;
-  priority: Priority;
+  priority: string;
   category: string;
   createdById: number;
   assignedToId: number | null;
-  slaDeadline: Date;
+  slaDeadline: string | Date;
   slaHours: number;
-  resolvedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface TicketDetail extends Ticket {
+  resolvedAt: string | Date | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
   createdBy: {
     id: number;
     name: string;
     email: string;
-    department?: string;
   };
   assignedTo: {
     id: number;
     name: string;
     email: string;
   } | null;
-  comments: TicketComment[];
-}
-
-export interface TicketComment {
-  id: number;
-  content: string;
-  message?: string;
-  ticketId: number;
-  authorId: number;
-  isInternal: boolean;
-  createdAt: Date;
-  author: {
+  comments: Array<{
     id: number;
-    name: string;
-    role: Role;
-  };
+    content: string;
+    message: string;
+    ticketId: number;
+    userId: number;
+    authorId: number | null;
+    isInternal: boolean;
+    createdAt: string | Date;
+    user: {
+      id: number;
+      name: string;
+      role: {
+        id: number;
+        name: string;
+      };
+    };
+  }>;
 }
 
 export interface Approval {
@@ -59,7 +71,7 @@ export interface Approval {
   status: ApprovalStatus;
   type: string;
   createdAt: Date;
-  dueDate: Date;
+  dueDate?: Date;
   notes?: string;
 }
 
@@ -88,5 +100,6 @@ export interface ChartDataPoint {
   label: string;
   value: number;
   color?: string;
+
 }
 
