@@ -14,13 +14,9 @@ const PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
 const PRIORITY_DESCRIPTIONS: Record<Priority, string> = {
     LOW: "Minor issue, no urgency (72h SLA)",
-    low: "Minor issue, no urgency (72h SLA)",
     MEDIUM: "Normal issue (24h SLA)",
-    medium: "Normal issue (24h SLA)",
     HIGH: "Significant impact (8h SLA)",
-    high: "Significant impact (8h SLA)",
     CRITICAL: "System down or blocking work (4h SLA)",
-    critical: "System down or blocking work (4h SLA)",
 };
 
 export default function CreateTicketPage() {

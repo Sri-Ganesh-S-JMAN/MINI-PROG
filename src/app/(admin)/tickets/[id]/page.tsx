@@ -14,24 +14,24 @@ import { DeleteTicketButton } from "@/components/dashboard/DeleteTicketButton";
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
     OPEN: "bg-white border border-gray-200 text-gray-900",
-    open: "bg-white border border-gray-200 text-gray-900",
     IN_PROGRESS: "bg-gray-100 border border-gray-200 text-gray-900",
-    in_progress: "bg-gray-100 border border-gray-200 text-gray-900",
     RESOLVED: "bg-gray-900 text-white",
-    resolved: "bg-gray-900 text-white",
     CLOSED: "bg-gray-50 border border-gray-200 text-gray-500",
-    closed: "bg-gray-50 border border-gray-200 text-gray-500",
 };
 const PRIORITY_COLORS: Record<Priority, string> = {
     CRITICAL: "bg-red-50 border border-red-200 text-red-700",
-    critical: "bg-red-50 border border-red-200 text-red-700",
     HIGH: "bg-gray-100 border border-gray-200 text-gray-900",
-    high: "bg-gray-100 border border-gray-200 text-gray-900",
     MEDIUM: "bg-white border border-gray-200 text-gray-900",
-    medium: "bg-white border border-gray-200 text-gray-900",
     LOW: "bg-gray-50 border border-gray-200 text-gray-500",
-    low: "bg-gray-50 border border-gray-200 text-gray-500",
 };
+
+function normalizeStatus(value: string): TicketStatus {
+    return value.toUpperCase() as TicketStatus;
+}
+
+function normalizePriority(value: string): Priority {
+    return value.toUpperCase() as Priority;
+}
 const SLA_BG: Record<string, string> = {
     on_track: "bg-white border-gray-200 text-gray-900",
     at_risk: "bg-orange-50 border-orange-200 text-orange-700",
@@ -153,10 +153,10 @@ export default function TicketDetailPage() {
                             <div className="flex-1">
                                 <h1 className="text-xl font-semibold tracking-tight text-gray-900">{ticket.title}</h1>
                                 <div className="flex items-center gap-2 mt-3 flex-wrap">
-                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[ticket.status as TicketStatus]}`}>
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[normalizeStatus(ticket.status)]}`}>
                                         {ticket.status.replace("_", " ")}
                                     </span>
-                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[ticket.priority as Priority]}`}>
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[normalizePriority(ticket.priority)]}`}>
                                         {ticket.priority}
                                     </span>
                                     <span className="text-xs text-gray-400 font-medium px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100">{ticket.category}</span>
