@@ -14,40 +14,40 @@ const statusConfig: Record<ApprovalStatus, { icon: React.FC<{ className?: string
   pending: {
     icon: Clock,
     label: "Pending",
-    className: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+    className: "bg-gray-100 text-black border border-gray-200",
   },
   approved: {
     icon: CheckCircle2,
     label: "Approved",
-    className: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+    className: "bg-gray-50 text-gray-700 border border-gray-200",
   },
   rejected: {
     icon: XCircle,
     label: "Rejected",
-    className: "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20",
+    className: "bg-transparent text-gray-500 border border-gray-200",
   },
   escalated: {
     icon: AlertTriangle,
     label: "Escalated",
-    className: "bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20",
+    className: "bg-black text-white border border-black",
   },
 };
 
 const typeColors: Record<string, string> = {
-  Deployment: "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
-  Finance: "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-300",
-  Access: "bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-300",
-  Contract: "bg-pink-100 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300",
-  Procurement: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300",
+  Deployment: "bg-gray-100 text-gray-800",
+  Finance: "bg-gray-100 text-gray-800",
+  Access: "bg-gray-100 text-gray-800",
+  Contract: "bg-gray-100 text-gray-800",
+  Procurement: "bg-gray-100 text-gray-800",
 };
 
 function getDueBadge(dueDate: Date | undefined | null, status: ApprovalStatus) {
   if (status !== "pending" || !dueDate) return null;
   const parsed = new Date(dueDate);
   if (isNaN(parsed.getTime())) return null;
-  if (isPast(parsed)) return <span className="text-xs font-medium text-rose-500">Overdue</span>;
+  if (isPast(parsed)) return <span className="text-xs font-bold text-black border border-black px-1.5 py-0.5 rounded-sm">Overdue</span>;
   return (
-    <span className="text-xs text-slate-400">Due {formatDistanceToNow(parsed, { addSuffix: true })}</span>
+    <span className="text-xs text-gray-400">Due {formatDistanceToNow(parsed, { addSuffix: true })}</span>
   );
 }
 
@@ -58,31 +58,31 @@ export function PendingApprovals({ approvals }: PendingApprovalsProps) {
   });
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <div>
-          <h2 className="text-base font-semibold text-slate-800 dark:text-white">Approvals</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Pending actions requiring your review</p>
+          <h2 className="text-base font-semibold text-black">Approvals</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Pending actions requiring your review</p>
         </div>
         <Link
           href="/approvals"
-          className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
+          className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-black transition-colors"
         >
           View all <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 
-      <div className="divide-y divide-slate-50 dark:divide-slate-800">
+      <div className="divide-y divide-gray-100">
         {sorted.map((approval) => {
           const s = statusConfig[approval.status];
           const StatusIcon = s.icon;
-          const typeColor = typeColors[approval.type] ?? "bg-slate-100 text-slate-600";
+          const typeColor = typeColors[approval.type] ?? "bg-gray-50 text-gray-600";
 
           return (
             <Link
               key={approval.id}
               href={`/approvals/${approval.id}`}
-              className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+              className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group"
             >
               <div className={`p-1.5 rounded-lg ${s.className} shrink-0`}>
                 <StatusIcon className="w-4 h-4" />
@@ -90,8 +90,8 @@ export function PendingApprovals({ approvals }: PendingApprovalsProps) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span className="text-xs font-mono text-slate-400 shrink-0">{approval.id}</span>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                  <span className="text-xs font-mono text-gray-400 shrink-0">{approval.id}</span>
+                  <span className="text-sm font-medium text-black truncate">
                     {approval.title}
                   </span>
                 </div>
@@ -99,12 +99,12 @@ export function PendingApprovals({ approvals }: PendingApprovalsProps) {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeColor}`}>
                     {approval.type}
                   </span>
-                  <span className="text-xs text-slate-400">by {approval.requestedBy}</span>
+                  <span className="text-xs text-gray-400">by {approval.requestedBy}</span>
                   {getDueBadge(approval.dueDate, approval.status)}
                 </div>
               </div>
 
-              <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0" />
+              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-black shrink-0" />
             </Link>
           );
         })}
