@@ -1,17 +1,18 @@
 // ─── Dashboard Types ────────────────────────────────────────────────────────
 
-export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
-export type Priority = "low" | "medium" | "high" | "critical";
-export type TicketPriority = "low" | "medium" | "high" | "critical";
-export type ApprovalStatus = "pending" | "approved" | "rejected" | "escalated";
+// Match Prisma schema enums (uppercase)
+export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+export type Priority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "ESCALATED";
 export type Role = "USER" | "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER";
 
 export interface Ticket {
   id: string;
   title: string;
   description: string;
-  status: "open" | "in_progress" | "resolved" | "closed";
-  priority: "low" | "medium" | "high" | "critical";
+  status: TicketStatus;
+  priority: Priority;
   assignee: string;
   reporter: string;
   createdAt: Date;

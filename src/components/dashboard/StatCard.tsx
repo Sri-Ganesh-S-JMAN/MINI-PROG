@@ -1,12 +1,12 @@
 // ─── StatCard Component ──────────────────────────────────────────────────────
 import React from "react";
-import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface StatCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string; size?: number; strokeWidth?: number }>;
   trend?: number; // positive = up, negative = down
   accentColor: string; // tailwind bg class e.g. "bg-black"
   iconBg: string; // e.g. "bg-gray-100"

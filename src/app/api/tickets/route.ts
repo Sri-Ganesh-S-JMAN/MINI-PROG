@@ -1,8 +1,11 @@
-﻿/**
+/**
  * src/app/api/tickets/route.ts
  * GET  /api/tickets  — list tickets (scoped by role)
  * POST /api/tickets  — create a new ticket
  */
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -33,16 +36,16 @@ export async function GET(request: NextRequest) {
         const userIdInt = parseInt(user.userId, 10);
         
         const roleFilter =
-            user.roleId === 1  // USER
-                ? { createdById: userIdInt }
-                : user.roleId === 5  // AGENT
+            ["ADMIN", "MANAGER"].includes(user.role)
+                ? {}  // Admins see all
+                : user.role === "AGENT"
                     ? { assignedToId: userIdInt }
-                    : {};  // ADMIN (4) or MANAGER (6) - see all tickets
+                    : { createdById: userIdInt }; // Regular users only see their own
 
         const where = {
             ...roleFilter,
-            ...(status ? { status: status as any } : {}),
-            ...(priority ? { priority: priority as any } : {}),
+            ...(status ? { status: status.toUpperCase() as any } : {}),
+            ...(priority ? { priority: priority.toUpperCase() as any } : {}),
         };
 
         const [tickets, total] = await Promise.all([

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     // Verify password
     const isPasswordValid = password == user.password;
-    
+
     if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Invalid email or password" },
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-    
+
   } catch (error) {
     console.error("Login error:", error);
 

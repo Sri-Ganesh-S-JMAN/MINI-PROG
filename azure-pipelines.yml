@@ -1,0 +1,47 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  dockerRegistryServiceConnection: '2c219892-1d7f-4e67-9159-3a73b03df33b'
+  imageRepository: 'sriganeshsjmanminiprog'
+  containerRegistry: 'miniproj.azurecr.io'
+  dockerfilePath: 'Dockerfile'
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      name: 'SelfHosted'   # Use your self-hosted agent pool name
+    steps:
+    - task: Docker@2
+      displayName: Build image
+      inputs:
+        command: build
+        containerRegistry: $(dockerRegistryServiceConnection)
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        tags: |
+          $(tag)
+          latest
+        arguments: '--build-arg DATABASE_URL=$(DATABASE_URL)'
+    
+    - task: Docker@2
+      displayName: Push image to container registry
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+          latest

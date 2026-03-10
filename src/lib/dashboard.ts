@@ -135,8 +135,8 @@ export async function getRecentTickets(limit = 10) {
     rawId: t.id,
     title: t.title,
     description: t.description,
-    status: t.status.toLowerCase() as "open" | "in_progress" | "resolved" | "closed",
-    priority: t.priority.toLowerCase() as "low" | "medium" | "high" | "critical",
+    status: t.status,
+    priority: t.priority as import("@/types/dashboard").Priority,
     assignee: t.assignedTo?.name ?? "Unassigned",
     reporter: t.createdBy.name,
     createdAt: t.createdAt,
@@ -178,15 +178,15 @@ export async function getRecentApprovals(limit = 6) {
 function mapRequestStatus(status: RequestStatus) {
   switch (status) {
     case RequestStatus.PENDING:
-      return "pending" as const;
+      return "PENDING" as const;
     case RequestStatus.MANAGER_APPROVED:
     case RequestStatus.ADMIN_APPROVED:
     case RequestStatus.ALLOCATED:
-      return "approved" as const;
+      return "APPROVED" as const;
     case RequestStatus.REJECTED:
-      return "rejected" as const;
+      return "REJECTED" as const;
     default:
-      return "pending" as const;
+      return "PENDING" as const;
   }
 }
 
@@ -314,15 +314,15 @@ export async function getTicketPriorityBreakdown() {
   });
 
   const colorMap: Record<string, string> = {
-    critical: "#000000",   // Black
-    high: "#374151",       // Gray 700
-    medium: "#9CA3AF",     // Gray 400
-    low: "#E5E7EB",        // Gray 200
+    CRITICAL: "#000000",   // Black
+    HIGH: "#374151",       // Gray 700
+    MEDIUM: "#9CA3AF",     // Gray 400
+    LOW: "#E5E7EB",        // Gray 200
   };
 
   return tickets.map((t) => ({
     label: t.priority.charAt(0).toUpperCase() + t.priority.slice(1).toLowerCase(),
     value: t._count.priority,
-    color: colorMap[t.priority.toLowerCase()] ?? "#E5E7EB",
+    color: colorMap[t.priority] ?? "#E5E7EB",
   }));
 }

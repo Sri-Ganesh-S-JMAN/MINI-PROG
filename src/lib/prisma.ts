@@ -1,3 +1,9 @@
+// The Prisma Client types are generated into `node_modules/@prisma/client`.
+// If you see "Module '@prisma/client' has no exported member 'PrismaClient'",
+// run `npx prisma generate` from the repo root to regenerate the client.
+// This project also requires a valid `prisma/schema.prisma` - a malformed
+// schema will prevent generation and cause the import error.
+//import { PrismaClient } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";

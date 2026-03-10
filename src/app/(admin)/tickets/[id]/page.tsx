@@ -12,22 +12,30 @@ import type { TicketDetail, TicketStatus, Priority, Role } from "@/types/dashboa
 import { getSLAStatus, formatSLATimeLeft } from "@/lib/sla";
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
-    OPEN: "bg-blue-100 text-blue-700",
-    IN_PROGRESS: "bg-yellow-100 text-yellow-700",
-    RESOLVED: "bg-green-100 text-green-700",
-    CLOSED: "bg-slate-100 text-slate-500",
+    OPEN: "bg-white border border-gray-200 text-gray-900",
+    open: "bg-white border border-gray-200 text-gray-900",
+    IN_PROGRESS: "bg-gray-100 border border-gray-200 text-gray-900",
+    in_progress: "bg-gray-100 border border-gray-200 text-gray-900",
+    RESOLVED: "bg-gray-900 text-white",
+    resolved: "bg-gray-900 text-white",
+    CLOSED: "bg-gray-50 border border-gray-200 text-gray-500",
+    closed: "bg-gray-50 border border-gray-200 text-gray-500",
 };
 const PRIORITY_COLORS: Record<Priority, string> = {
-    CRITICAL: "bg-red-100 text-red-700",
-    HIGH: "bg-orange-100 text-orange-700",
-    MEDIUM: "bg-yellow-100 text-yellow-700",
-    LOW: "bg-slate-100 text-slate-500",
+    CRITICAL: "bg-red-50 border border-red-200 text-red-700",
+    critical: "bg-red-50 border border-red-200 text-red-700",
+    HIGH: "bg-gray-100 border border-gray-200 text-gray-900",
+    high: "bg-gray-100 border border-gray-200 text-gray-900",
+    MEDIUM: "bg-white border border-gray-200 text-gray-900",
+    medium: "bg-white border border-gray-200 text-gray-900",
+    LOW: "bg-gray-50 border border-gray-200 text-gray-500",
+    low: "bg-gray-50 border border-gray-200 text-gray-500",
 };
 const SLA_BG: Record<string, string> = {
-    on_track: "bg-green-50 border-green-200 text-green-700",
+    on_track: "bg-white border-gray-200 text-gray-900",
     at_risk: "bg-orange-50 border-orange-200 text-orange-700",
     breached: "bg-red-50 border-red-200 text-red-700",
-    resolved: "bg-slate-50 border-slate-200 text-slate-500",
+    resolved: "bg-gray-50 border-gray-200 text-gray-500",
 };
 
 export default function TicketDetailPage() {
@@ -140,87 +148,95 @@ export default function TicketDetailPage() {
             <div className="grid grid-cols-3 gap-6">
                 <div className="col-span-2 space-y-4">
                     <div className="card p-6">
-                        <div className="flex items-start gap-3 mb-4">
+                        <div className="flex items-start gap-4 mb-5 border-b border-gray-100 pb-5">
                             <div className="flex-1">
-                                <h1 className="text-xl font-semibold text-slate-800">{ticket.title}</h1>
-                                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[ticket.status as TicketStatus]}`}>
+                                <h1 className="text-xl font-semibold tracking-tight text-gray-900">{ticket.title}</h1>
+                                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[ticket.status as TicketStatus]}`}>
                                         {ticket.status.replace("_", " ")}
                                     </span>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${PRIORITY_COLORS[ticket.priority as Priority]}`}>
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[ticket.priority as Priority]}`}>
                                         {ticket.priority}
                                     </span>
-                                    <span className="text-xs text-slate-400">{ticket.category}</span>
+                                    <span className="text-xs text-gray-400 font-medium px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100">{ticket.category}</span>
                                 </div>
                             </div>
                         </div>
-                        <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
-                        <div className="mt-4 text-xs text-slate-400 flex gap-4">
-                            <span>By <strong className="text-slate-600">{ticket.createdBy.name}</strong></span>
+                        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{ticket.description}</p>
+                        <div className="mt-5 pt-4 text-xs text-gray-400 flex flex-wrap gap-4 border-t border-gray-50">
+                            <span>By <strong className="text-gray-700 font-medium">{ticket.createdBy.name}</strong></span>
                             <span>Created {new Date(ticket.createdAt).toLocaleString()}</span>
                         </div>
                     </div>
 
                     <div className="card p-6">
-                        <h2 className="font-medium text-slate-800 mb-4">
+                        <h2 className="font-semibold text-gray-900 mb-5 tracking-tight">
                             Comments ({ticket.comments.length})
                         </h2>
 
                         {ticket.comments.length === 0 ? (
-                            <p className="text-slate-400 text-sm italic">No comments yet.</p>
+                            <p className="text-gray-400 text-sm italic py-4">No comments yet.</p>
                         ) : (
-                            <div className="space-y-4 mb-6">
+                            <div className="space-y-5 mb-8">
                                 {ticket.comments.map((c: any) => (
                                     <div
                                         key={c.id}
-                                        className={`flex gap-3 ${c.isInternal ? "opacity-75" : ""}`}
+                                        className={`flex gap-3.5 ${c.isInternal ? "opacity-75" : ""}`}
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0">
-                                            <span className="text-brand-700 text-xs font-semibold">
-                                                {c.author.name.charAt(0)}
+                                        <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-gray-600 text-xs font-semibold">
+                                                {c.author.name.charAt(0).toUpperCase()}
                                             </span>
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-slate-800">{c.author.name}</span>
-                                                <span className="text-xs text-slate-400 capitalize">{c.author.role.toLowerCase()}</span>
+                                        <div className="flex-1 bg-gray-50 border border-gray-100 rounded-lg p-3.5">
+                                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                                <span className="text-sm font-semibold text-gray-900">{c.author.name}</span>
+                                                <span className="text-xs text-gray-500 capitalize">{c.author.role.toLowerCase()}</span>
                                                 {c.isInternal && (
-                                                    <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">Internal</span>
+                                                    <span className="text-[10px] font-medium bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded uppercase tracking-wide">Internal</span>
                                                 )}
-                                                <span className="text-xs text-slate-400">
-                                                    {new Date(c.createdAt).toLocaleString()}
+                                                <span className="text-xs text-gray-400 ml-auto">
+                                                    {new Date(c.createdAt).toLocaleString(undefined, {
+                                                        month: "short", day: "numeric", hour: "numeric", minute: "numeric"
+                                                    })}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-slate-600 mt-1 whitespace-pre-wrap">{c.content}</p>
+                                            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{c.content}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        <form onSubmit={handleComment} className="space-y-3">
+                        <form onSubmit={handleComment} className="space-y-4 pt-4 border-t border-gray-100">
                             {error && <p className="text-red-600 text-sm">{error}</p>}
                             <textarea
-                                className="input resize-none"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none shadow-sm transition-shadow"
                                 rows={3}
                                 placeholder="Write a comment…"
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
                             />
-                            {isStaff && (
-                                <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={isInternal}
-                                        onChange={(e) => setIsInternal(e.target.checked)}
-                                        className="accent-brand-600"
-                                    />
-                                    Internal note (hidden from employee)
-                                </label>
-                            )}
-                            <button type="submit" className="btn-primary" disabled={!comment.trim()}>
-                                Post Comment
-                            </button>
+                            <div className="flex items-center justify-between">
+                                {isStaff ? (
+                                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={isInternal}
+                                            onChange={(e) => setIsInternal(e.target.checked)}
+                                            className="accent-black h-4 w-4 border-gray-300 rounded"
+                                        />
+                                        Internal note (hidden from employee)
+                                    </label>
+                                ) : <div />}
+                                <button
+                                    type="submit"
+                                    className="bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                    disabled={!comment.trim()}
+                                >
+                                    Post Comment
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -235,10 +251,10 @@ export default function TicketDetailPage() {
                     </div>
 
                     {isStaff && (
-                        <div className="card p-4">
-                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Status</p>
+                        <div className="card p-5">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">Status</p>
                             <select
-                                className="input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white shadow-sm transition-shadow"
                                 value={ticket.status}
                                 onChange={(e) => updateTicket({ status: e.target.value })}
                                 disabled={saving}
@@ -252,7 +268,7 @@ export default function TicketDetailPage() {
                                 <button
                                     onClick={() => updateTicket({ status: "RESOLVED" })}
                                     disabled={saving}
-                                    className="btn-primary w-full mt-3 text-xs"
+                                    className="w-full mt-4 bg-white border border-gray-200 text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 shadow-sm"
                                 >
                                     {saving ? "Updating..." : "Mark as Resolved"}
                                 </button>
@@ -261,10 +277,10 @@ export default function TicketDetailPage() {
                     )}
 
                     {isStaff && (
-                        <div className="card p-4">
-                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Assigned To</p>
+                        <div className="card p-5">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">Assigned To</p>
                             <select
-                                className="input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white shadow-sm transition-shadow"
                                 value={ticket.assignedToId ?? ""}
                                 onChange={(e) => updateTicket({ assignedToId: e.target.value || null })}
                                 disabled={saving}
