@@ -35,12 +35,15 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
 
       // Redirect based on role
-      // Role IDs: 1=USER, 4=ADMIN, 5=AGENT, 6=MANAGER
-      if (data.role === 4 || data.role === 6) {
+      const isAdminOrManager = data.roleName
+        ? data.roleName === "ADMIN" || data.roleName === "MANAGER"
+        : data.role === 4 || data.role === 6;
+
+      if (isAdminOrManager) {
         // ADMIN or MANAGER → dashboard
         window.location.href = "/dashboard";
       } else {
-        // USER or AGENT → tickets
+        // EMPLOYEE or AGENT → tickets
         window.location.href = "/tickets";
       }
     } catch (err) {

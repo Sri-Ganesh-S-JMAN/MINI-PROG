@@ -101,8 +101,8 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           {navItems.map(({ href, icon: Icon, label }) => {
             // Role-based visibility logic
             // ADMIN and MANAGER can see everything
-            // USER and AGENT can only see Tickets and Asset Requests 
-            const isUserOrAgent = user?.role === "USER" || user?.role === "AGENT";
+            // EMPLOYEE and AGENT can only see Tickets and Asset Requests
+            const isUserOrAgent = user?.role === "EMPLOYEE" || user?.role === "AGENT";
             const isAllowedForUser = href === "/tickets" || href === "/asset-requests";
 
             if (isUserOrAgent && !isAllowedForUser) {

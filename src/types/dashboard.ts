@@ -5,7 +5,7 @@ export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "ESCALATED";
-export type Role = "USER" | "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER";
+export type Role = "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER";
 
 export interface Ticket {
   id: string;

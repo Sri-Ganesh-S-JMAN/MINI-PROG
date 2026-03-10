@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       {
         id: user.id,
         role: user.roleId,
+        roleName: user.role.name,
         name: user.name,
         email: user.email,
       },
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
       message: "Login successful",
       token,
       role: user.roleId,
+      roleName: user.role.name,
       user: {
         id: user.id,
         name: user.name,

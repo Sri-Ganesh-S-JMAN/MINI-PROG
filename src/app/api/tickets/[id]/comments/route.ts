@@ -64,7 +64,7 @@ export async function POST(
             return NextResponse.json({ error: "Comment content is required." }, { status: 400 });
         }
 
-        const internal = (user.roleId !== 1) && !!isInternal;
+        const internal = (user.role !== "EMPLOYEE") && !!isInternal;
 
         const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
         if (!ticket) return NextResponse.json({ error: "Ticket not found." }, { status: 404 });

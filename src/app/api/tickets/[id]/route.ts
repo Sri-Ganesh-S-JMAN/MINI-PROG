@@ -30,14 +30,14 @@ export async function GET(
                 comments: {
                     include: { user: { select: { id: true, name: true, role: true } } },
                     orderBy: { createdAt: "asc" },
-                    where: user.roleId === 1 ? { isInternal: false } : {},
+                    where: user.role === "EMPLOYEE" ? { isInternal: false } : {},
                 },
             },
         });
 
         if (!ticket) return NextResponse.json({ error: "Ticket not found." }, { status: 404 });
 
-        if (user.roleId === 1 && ticket.createdById !== parseInt(user.userId, 10)) {
+        if (user.role === "EMPLOYEE" && ticket.createdById !== parseInt(user.userId, 10)) {
             return NextResponse.json({ error: "Forbidden." }, { status: 403 });
         }
 
@@ -56,7 +56,7 @@ export async function PATCH(
     try {
         const user = await getCurrentUser();
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        if (user.roleId === 1) return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+        if (user.role === "EMPLOYEE") return NextResponse.json({ error: "Forbidden." }, { status: 403 });
 
         const { id } = await params;
         const ticketId = parseInt(id, 10);

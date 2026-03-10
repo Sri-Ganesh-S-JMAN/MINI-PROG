@@ -9,13 +9,13 @@ export interface CurrentUser {
   userId: string;
   name: string;
   email: string;
-  role: "USER" | "AGENT" | "ADMIN" | "MANAGER";
+  role: "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER";
   roleId: number;
 }
 
 // Map roleId to role name
-const ROLE_MAP: Record<number, "USER" | "AGENT" | "ADMIN" | "MANAGER"> = {
-  1: "USER",      // Regular employee
+const ROLE_MAP: Record<number, "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER"> = {
+  7: "EMPLOYEE",  // Regular employee
   4: "ADMIN",     // Administrator
   5: "AGENT",     // IT Support Agent
   6: "MANAGER",   // Manager
@@ -33,13 +33,14 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       id: number;
       role: number;
+      roleName?: "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER";
       name: string;    // ✅ From JWT
       email: string;   // ✅ From JWT
       iat: number;
       exp: number;
     };
 
-    const roleName = ROLE_MAP[decoded.role] || "USER";
+    const roleName = decoded.roleName ?? ROLE_MAP[decoded.role] ?? "EMPLOYEE";
 
     return {
       userId: decoded.id.toString(),

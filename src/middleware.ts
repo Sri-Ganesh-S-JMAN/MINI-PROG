@@ -31,15 +31,17 @@ export function middleware(request: NextRequest) {
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET!); // ✅ Now token is guaranteed to be string
     
-    console.log("Decoded role:", decoded.role);
+    console.log("Decoded role:", decoded.role, decoded.roleName);
     const roleId = decoded.role;
+    const roleName = decoded.roleName as "EMPLOYEE" | "AGENT" | "ADMIN" | "MANAGER" | undefined;
     
-    // Check role access for specific routes
-    // Roles: 1=USER, 5=AGENT -> Restricted to /tickets, /asset-requests, /profile
-    const isUserOrAgent = roleId === 1 || roleId === 5;
+    // Restrict employee/agent users to non-admin app areas.
+    const isEmployeeOrAgent = roleName
+      ? roleName === "EMPLOYEE" || roleName === "AGENT"
+      : roleId === 7 || roleId === 5;
     
     // Protect admin-only routes
-    if (isUserOrAgent && (
+    if (isEmployeeOrAgent && (
       path.startsWith("/dashboard") || 
       path.startsWith("/assets") || 
       path.startsWith("/users")
@@ -50,13 +52,16 @@ export function middleware(request: NextRequest) {
  
     // If user has valid token and is on login page, redirect based on role
     if (path === "/login") {
-      // Role IDs: 1=USER, 4=ADMIN, 5=AGENT, 6=MANAGER
-      if (roleId === 4 || roleId === 6) {
+      const isAdminOrManager = roleName
+        ? roleName === "ADMIN" || roleName === "MANAGER"
+        : roleId === 4 || roleId === 6;
+
+      if (isAdminOrManager) {
         // ADMIN or MANAGER → dashboard
         console.log("Redirecting to dashboard");
         return NextResponse.redirect(new URL("/dashboard", request.url));
-      } else if (isUserOrAgent) {
-        // USER or AGENT → tickets
+      } else if (isEmployeeOrAgent) {
+        // EMPLOYEE or AGENT → tickets
         console.log("Redirecting to tickets");
         return NextResponse.redirect(new URL("/tickets", request.url));
       }
