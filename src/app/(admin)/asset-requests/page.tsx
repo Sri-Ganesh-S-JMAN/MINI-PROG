@@ -3,14 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { useSearchParams } from "next/navigation";
+import { IdBadge } from "@/components/IdBadge";
+
 export default function RequestsPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const search = searchParams.get("search") || "";
 
   useEffect(() => {
+    setLoading(true);
     Promise.all([
-      fetch("/api/asset-requests").then((res) => res.json()),
+      fetch(`/api/asset-requests${search ? `?search=${search}` : ""}`).then((res) => res.json()),
       fetch("/api/auth/me").then((res) => res.ok ? res.json() : null)
     ]).then(([requestsData, authData]) => {
       setRequests(Array.isArray(requestsData) ? requestsData : []);
@@ -20,12 +26,12 @@ export default function RequestsPage() {
       console.error(err);
       setLoading(false);
     });
-  }, []);
+  }, [search]);
 
   const getStatusColor = (status: string) => {
     switch(status) {
       case "PENDING": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "MANAGER_APPROVED":
+      case "MANAGER_APPROVED": return "bg-blue-50 text-blue-700 border-blue-200";
       case "ADMIN_APPROVED":
       case "ALLOCATED": return "bg-gray-900 text-white border-transparent";
       case "REJECTED": return "bg-red-50 text-red-700 border-red-200";
@@ -35,7 +41,7 @@ export default function RequestsPage() {
 
   const isStaff = currentUser?.role === "ADMIN" || currentUser?.role === "MANAGER";
 
-  return (
+    return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -50,6 +56,22 @@ export default function RequestsPage() {
           </svg>
           New Request
         </Link>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-start sm:items-center">
+        <form className="relative w-full sm:w-64" action="/asset-requests" method="GET">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input
+                type="search"
+                name="search"
+                placeholder="Search by ID..."
+                defaultValue={search}
+                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all shadow-sm"
+            />
+        </form>
       </div>
 
       {loading ? (
@@ -72,6 +94,7 @@ export default function RequestsPage() {
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
+                  <th className="px-6 py-3">ID</th>
                   <th className="px-6 py-3">Asset</th>
                   <th className="px-6 py-3">Requested By</th>
                   <th className="px-6 py-3">Status</th>
@@ -83,6 +106,9 @@ export default function RequestsPage() {
               <tbody className="divide-y divide-gray-100 text-gray-600">
                 {requests.map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                        <IdBadge id={r.id} />
+                    </td>
                     <td className="px-6 py-4 font-medium text-gray-900">{r.asset?.name || `Asset #${r.assetId}`}</td>
                     <td className="px-6 py-4">{r.user?.name}</td>
                     <td className="px-6 py-4">

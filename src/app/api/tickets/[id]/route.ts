@@ -69,7 +69,9 @@ export async function PATCH(
         const resolvedAt =
             status === "RESOLVED" && existing.status !== "RESOLVED"
                 ? new Date()
-                : existing.resolvedAt;
+                : (status && status !== "RESOLVED" && existing.status === "RESOLVED")
+                    ? null
+                    : existing.resolvedAt;
 
         const ticket = await prisma.ticket.update({
             where: { id: ticketId },
@@ -78,6 +80,14 @@ export async function PATCH(
                 ...(priority ? { priority } : {}),
                 ...(assignedToId !== undefined ? { assignedToId: assignedToId ? parseInt(assignedToId, 10) : null } : {}),
                 resolvedAt,
+            },
+            include: {
+                createdBy: { select: { id: true, name: true, email: true } },
+                assignedTo: { select: { id: true, name: true, email: true } },
+                comments: {
+                    include: { user: { select: { id: true, name: true, role: true } } },
+                    orderBy: { createdAt: "asc" },
+                },
             },
         });
 

@@ -30,13 +30,14 @@ export async function PATCH(req: Request) {
       );
     }
 
-    // 2️⃣ Allow only ADMIN or AGENT to approve
+    // 2️⃣ Allow only ADMIN, MANAGER, or AGENT to approve
     if (
       approver.role.name !== "ADMIN" &&
+      approver.role.name !== "MANAGER" &&
       approver.role.name !== "AGENT"
     ) {
       return NextResponse.json(
-        { error: "Only ADMIN or AGENT can approve requests" },
+        { error: "Only ADMIN, MANAGER, or AGENT can approve requests" },
         { status: 403 }
       );
     }
@@ -79,8 +80,20 @@ export async function PATCH(req: Request) {
       });
     }
 
-    // 6️⃣ Approve and allocate asset
+    // 6️⃣ Manager approval — set MANAGER_APPROVED, do not allocate yet
+    if (approver.role.name === "MANAGER") {
+      const updatedRequest = await prisma.assetRequest.update({
+        where: { id: request.id },
+        data: { status: "MANAGER_APPROVED" },
+      });
 
+      return NextResponse.json({
+        message: "Request approved by manager. Awaiting final admin approval.",
+        request: updatedRequest,
+      });
+    }
+
+    // 7️⃣ Admin/Agent approval — allocate asset immediately
     const updatedRequest = await prisma.assetRequest.update({
       where: { id: request.id },
       data: { status: "ALLOCATED" },

@@ -3,12 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
 // GET ALL REQUESTS
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const whereClause = user.role === "EMPLOYEE" ? { userId: parseInt(user.userId, 10) } : {};
+    const { searchParams } = new URL(req.url);
+    const searchParam = searchParams.get("search");
+
+    const whereClause: any = user.role === "EMPLOYEE" ? { userId: parseInt(user.userId, 10) } : {};
+
+    if (searchParam) {
+      const searchId = parseInt(searchParam, 10);
+      if (!isNaN(searchId)) {
+        whereClause.id = searchId;
+      }
+    }
 
     const requests = await prisma.assetRequest.findMany({
       where: whereClause,

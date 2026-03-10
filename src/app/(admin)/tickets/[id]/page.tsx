@@ -11,6 +11,7 @@ import Link from "next/link";
 import type { TicketDetail, TicketStatus, Priority, Role } from "@/types/dashboard";
 import { getSLAStatus, formatSLATimeLeft } from "@/lib/sla";
 import { DeleteTicketButton } from "@/components/dashboard/DeleteTicketButton";
+import { IdBadge } from "@/components/IdBadge";
 
 const STATUS_COLORS: Record<TicketStatus, string> = {
     OPEN: "bg-white border border-gray-200 text-gray-900",
@@ -37,6 +38,7 @@ const SLA_BG: Record<string, string> = {
     at_risk: "bg-orange-50 border-orange-200 text-orange-700",
     breached: "bg-red-50 border-red-200 text-red-700",
     resolved: "bg-gray-50 border-gray-200 text-gray-500",
+    closed: "bg-gray-50 border-gray-200 text-gray-400",
 };
 
 export default function TicketDetailPage() {
@@ -53,11 +55,16 @@ export default function TicketDetailPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
+    const [confirmClose, setConfirmClose] = useState(false);
+    const [agentSearch, setAgentSearch] = useState("");
+    const [agentDropdownOpen, setAgentDropdownOpen] = useState(false);
 
     useEffect(() => {
-        fetch("/api/me").then((r) => r.json()).then((d: { role: Role; userId: string }) => {
-            setUserRole(d.role);
-            setUserId(d.userId);
+        fetch("/api/auth/me").then((r) => r.json()).then((d: { user?: { role: Role; userId: string } }) => {
+            if (d.user) {
+                setUserRole(d.user.role);
+                setUserId(d.user.userId);
+            }
         }).catch(() => { });
     }, []);
 
@@ -69,8 +76,15 @@ export default function TicketDetailPage() {
     }, [id]);
 
     useEffect(() => {
+        if (!agentDropdownOpen) return;
+        const close = () => setAgentDropdownOpen(false);
+        document.addEventListener("click", close, { once: true });
+        return () => document.removeEventListener("click", close);
+    }, [agentDropdownOpen]);
+
+    useEffect(() => {
         if (userRole !== "EMPLOYEE") {
-            fetch("/api/admin/users?role=AGENT")
+            fetch("/api/users?role=AGENT")
                 .then((r) => r.json())
                 .then((d: { users?: { id: string; name: string }[] }) => setAgents(d.users ?? []));
         }
@@ -131,14 +145,37 @@ export default function TicketDetailPage() {
         );
     }
 
-    const slaStatus = getSLAStatus(new Date(ticket.slaDeadline), ticket.resolvedAt ? new Date(ticket.resolvedAt) : null);
-    const slaTime = formatSLATimeLeft(new Date(ticket.slaDeadline), ticket.resolvedAt ? new Date(ticket.resolvedAt) : null);
+    const isClosed = ticket.status === "CLOSED";
+    const slaStatus = isClosed ? "closed" : getSLAStatus(new Date(ticket.slaDeadline), ticket.resolvedAt ? new Date(ticket.resolvedAt) : null);
+    const slaTime = isClosed ? "Closed" : formatSLATimeLeft(new Date(ticket.slaDeadline), ticket.resolvedAt ? new Date(ticket.resolvedAt) : null);
 
     const STATUSES: TicketStatus[] = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
     const isStaff = userRole === "ADMIN" || userRole === "AGENT";
 
     return (
         <div className="max-w-4xl">
+            {confirmClose && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-xl p-6 w-full max-w-sm mx-4">
+                        <h2 className="text-base font-semibold text-gray-900 mb-1">Close this ticket?</h2>
+                        <p className="text-sm text-gray-500 mb-6">This will lock the ticket. No further comments or status changes will be allowed.</p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setConfirmClose(false)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => { setConfirmClose(false); updateTicket({ status: "CLOSED" }); }}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-black text-white hover:bg-gray-800 transition-colors"
+                            >
+                                Close Ticket
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <Link href="/tickets" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-4 transition">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -151,7 +188,12 @@ export default function TicketDetailPage() {
                     <div className="card p-6">
                         <div className="flex items-start justify-between gap-4 mb-5 border-b border-gray-100 pb-5">
                             <div className="flex-1">
-                                <h1 className="text-xl font-semibold tracking-tight text-gray-900">{ticket.title}</h1>
+                                <div className="flex items-center gap-3">
+                                    <IdBadge id={ticket.id} />
+                                    <h1 className="text-xl font-semibold tracking-tight text-gray-900">
+                                        {ticket.title}
+                                    </h1>
+                                </div>
                                 <div className="flex items-center gap-2 mt-3 flex-wrap">
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[normalizeStatus(ticket.status)]}`}>
                                         {ticket.status.replace("_", " ")}
@@ -212,7 +254,10 @@ export default function TicketDetailPage() {
                             </div>
                         )}
 
-                        <form onSubmit={handleComment} className="space-y-4 pt-4 border-t border-gray-100">
+                        {isClosed && (
+                            <p className="text-xs text-gray-400 italic pt-4 border-t border-gray-100">This ticket is closed and no longer accepts comments.</p>
+                        )}
+                        <form onSubmit={handleComment} className={`space-y-4 pt-4 border-t border-gray-100 ${isClosed ? "hidden" : ""}`}>
                             {error && <p className="text-red-600 text-sm">{error}</p>}
                             <textarea
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none shadow-sm transition-shadow"
@@ -261,8 +306,11 @@ export default function TicketDetailPage() {
                                 {STATUSES.map((s) => (
                                     <button
                                         key={s}
-                                        onClick={() => updateTicket({ status: s })}
-                                        disabled={saving || ticket.status === s}
+                                        onClick={() => {
+                                            if (s === "CLOSED") { setConfirmClose(true); return; }
+                                            updateTicket({ status: s });
+                                        }}
+                                        disabled={saving || ticket.status === s || (isClosed && s !== "CLOSED")}
                                         className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:cursor-not-allowed shadow-sm ${
                                             ticket.status === s
                                                 ? "bg-black text-white border-black"
@@ -279,17 +327,64 @@ export default function TicketDetailPage() {
                     {isStaff && (
                         <div className="card p-5">
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2.5">Assigned To</p>
-                            <select
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white shadow-sm transition-shadow"
-                                value={ticket.assignedToId ?? ""}
-                                onChange={(e) => updateTicket({ assignedToId: e.target.value || null })}
-                                disabled={saving}
-                            >
-                                <option value="">Unassigned</option>
-                                {agents.map((a) => (
-                                    <option key={a.id} value={a.id}>{a.name}</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => { if (!saving && !isClosed) { setAgentSearch(""); setAgentDropdownOpen((o) => !o); } }}
+                                    disabled={saving || isClosed}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white shadow-sm text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-black"
+                                >
+                                    <span className={ticket.assignedToId ? "text-gray-900" : "text-gray-400"}>
+                                        {ticket.assignedToId ? (agents.find((a) => a.id === String(ticket.assignedToId))?.name ?? "Assigned") : "Unassigned"}
+                                    </span>
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {agentDropdownOpen && (
+                                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                                        <div className="p-2 border-b border-gray-100">
+                                            <input
+                                                autoFocus
+                                                type="text"
+                                                placeholder="Search agents…"
+                                                value={agentSearch}
+                                                onChange={(e) => setAgentSearch(e.target.value)}
+                                                className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                                            />
+                                        </div>
+                                        <ul className="max-h-48 overflow-y-auto">
+                                            <li>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { updateTicket({ assignedToId: null }); setAgentDropdownOpen(false); }}
+                                                    className="w-full text-left px-3 py-2 text-sm text-gray-400 hover:bg-gray-50"
+                                                >
+                                                    Unassigned
+                                                </button>
+                                            </li>
+                                            {agents
+                                                .filter((a) => a.name.toLowerCase().includes(agentSearch.toLowerCase()))
+                                                .map((a) => (
+                                                    <li key={a.id}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { updateTicket({ assignedToId: a.id }); setAgentDropdownOpen(false); }}
+                                                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${
+                                                                String(ticket.assignedToId) === a.id ? "font-semibold text-gray-900" : "text-gray-700"
+                                                            }`}
+                                                        >
+                                                            {a.name}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            {agents.filter((a) => a.name.toLowerCase().includes(agentSearch.toLowerCase())).length === 0 && (
+                                                <li className="px-3 py-2 text-sm text-gray-400 italic">No agents found</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 

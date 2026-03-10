@@ -10,6 +10,7 @@ export const revalidate = 0;
 import { getCurrentUser } from "@/lib/auth";
 import { getSLAStatus, formatSLATimeLeft } from "@/lib/sla";
 import { DeleteTicketButton } from "@/components/dashboard/DeleteTicketButton";
+import { IdBadge } from "@/components/IdBadge";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { TicketStatus, Priority } from "@/types/dashboard";
@@ -41,10 +42,11 @@ const SLA_COLORS: Record<string, string> = {
     at_risk: "text-amber-600",
     breached: "text-red-600",
     resolved: "text-gray-400",
+    closed: "text-gray-400",
 };
 
 export default async function TicketsPage(
-    props: { searchParams: Promise<{ status?: string; page?: string }> }
+    props: { searchParams: Promise<{ status?: string; page?: string; search?: string }> }
 ) {
     const searchParams = await props.searchParams;
     const user = await getCurrentUser();
@@ -63,10 +65,17 @@ export default async function TicketsPage(
 
     const currentPage = Math.max(1, parseInt(searchParams.page || "1", 10));
     const itemsPerPage = 50;
-    const whereClause = {
+    const whereClause: any = {
         ...roleFilter,
         ...(searchParams.status ? { status: (searchParams.status as string).toUpperCase() as any } : {}),
     };
+
+    if (searchParams.search) {
+        const searchId = parseInt(searchParams.search, 10);
+        if (!isNaN(searchId)) {
+            whereClause.id = searchId;
+        }
+    }
 
     const tickets = await prisma.ticket.findMany({
         where: whereClause,
@@ -91,8 +100,14 @@ export default async function TicketsPage(
         <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Tickets</h1>
-                    <p className="text-sm text-gray-500 mt-1">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</p>
+                    <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+                        {user.role === "AGENT" ? "My Assigned Tickets" : "Tickets"}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {user.role === "AGENT"
+                            ? `${totalTickets} ticket${totalTickets !== 1 ? "s" : ""} assigned to you`
+                            : `${totalTickets} ticket${totalTickets !== 1 ? "s" : ""}`}
+                    </p>
                 </div>
                 {user.role !== "AGENT" && (
                     <Link href="/tickets/create" className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
@@ -104,24 +119,42 @@ export default async function TicketsPage(
                 )}
             </div>
 
-            <div className="flex gap-1 mb-6 bg-gray-50/50 rounded-lg border border-gray-200 p-1 w-max">
-                <Link
-                    href="/tickets"
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${!searchParams.status ? "bg-white text-black shadow-sm border border-gray-200" : "text-gray-500 hover:text-black hover:bg-gray-100"
-                        }`}
-                >
-                    All
-                </Link>
-                {STATUSES.map((s: string) => (
+            <div className="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-start sm:items-center">
+                <div className="flex gap-1 bg-gray-50/50 rounded-lg border border-gray-200 p-1 w-max">
                     <Link
-                        key={s}
-                        href={`/tickets?status=${s}`}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${searchParams.status === s ? "bg-white text-black shadow-sm border border-gray-200" : "text-gray-500 hover:text-black hover:bg-gray-100"
+                        href="/tickets"
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${!searchParams.status ? "bg-white text-black shadow-sm border border-gray-200" : "text-gray-500 hover:text-black hover:bg-gray-100"
                             }`}
                     >
-                        {s.replace("_", " ")}
+                        All
                     </Link>
-                ))}
+                    {STATUSES.map((s: string) => (
+                        <Link
+                            key={s}
+                            href={`/tickets?${new URLSearchParams({ status: s, ...(searchParams.search ? { search: searchParams.search } : {}) })}`}
+                            className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${searchParams.status === s ? "bg-white text-black shadow-sm border border-gray-200" : "text-gray-500 hover:text-black hover:bg-gray-100"
+                                }`}
+                        >
+                            {s.replace("_", " ")}
+                        </Link>
+                    ))}
+                </div>
+
+                <form className="relative w-full sm:w-64" action="/tickets" method="GET">
+                    {searchParams.status && <input type="hidden" name="status" value={searchParams.status} />}
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input
+                        type="search"
+                        name="search"
+                        placeholder="Search by ID..."
+                        defaultValue={searchParams.search || ""}
+                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all shadow-sm"
+                    />
+                </form>
             </div>
 
             {tickets.length === 0 ? (
@@ -131,7 +164,9 @@ export default async function TicketsPage(
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <p className="text-gray-500 text-sm mb-4">No tickets found.</p>
+                    <p className="text-gray-500 text-sm mb-4">
+                        {user.role === "AGENT" ? "No tickets have been assigned to you yet." : "No tickets found."}
+                    </p>
                     {user.role !== "AGENT" && (
                         <Link href="/tickets/create" className="inline-flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">Create your first ticket</Link>
                     )}
@@ -142,6 +177,7 @@ export default async function TicketsPage(
                         <table className="w-full text-left text-sm whitespace-nowrap">
                             <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-200">
                                 <tr>
+                                    <th className="px-6 py-3">ID</th>
                                     <th className="px-6 py-3">Title</th>
                                     <th className="px-6 py-3">Status</th>
                                     <th className="px-6 py-3">Priority</th>
@@ -154,10 +190,14 @@ export default async function TicketsPage(
                             </thead>
                             <tbody className="divide-y divide-gray-100 text-gray-600">
                                 {tickets.map((ticket: any) => {
-                                    const slaStatus = getSLAStatus(ticket.slaDeadline, ticket.resolvedAt);
-                                    const slaTime = formatSLATimeLeft(ticket.slaDeadline, ticket.resolvedAt);
+                                    const isClosed = ticket.status === "CLOSED";
+                                    const slaStatus = isClosed ? "closed" : getSLAStatus(ticket.slaDeadline, ticket.resolvedAt);
+                                    const slaTime = isClosed ? "Closed" : formatSLATimeLeft(ticket.slaDeadline, ticket.resolvedAt);
                                     return (
                                         <tr key={ticket.id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <IdBadge id={ticket.id} />
+                                            </td>
                                             <td className="px-0 py-0">
                                                 <Link href={`/tickets/${ticket.id}`} className="block px-6 py-4">
                                                     <span className="font-medium text-gray-900 group-hover:text-black transition">

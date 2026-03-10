@@ -23,6 +23,8 @@ declare module "lucide-react" {
   export const ChevronRight: any;
   export const TrendingDown: any;
   export const Trash2: any;
+  export const Copy: any;
+  export const Check: any;
   export const LucideIcon: any;
   const _default: any;
   export default _default;
