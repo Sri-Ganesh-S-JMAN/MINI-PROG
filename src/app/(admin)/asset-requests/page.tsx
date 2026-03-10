@@ -25,7 +25,7 @@ export default function RequestsPage() {
   const getStatusColor = (status: string) => {
     switch(status) {
       case "PENDING": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "MANAGER_APPROVED":
+      case "MANAGER_APPROVED": return "bg-blue-50 text-blue-700 border-blue-200";
       case "ADMIN_APPROVED":
       case "ALLOCATED": return "bg-gray-900 text-white border-transparent";
       case "REJECTED": return "bg-red-50 text-red-700 border-red-200";

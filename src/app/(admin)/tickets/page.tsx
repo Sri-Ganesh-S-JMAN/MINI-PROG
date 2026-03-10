@@ -41,6 +41,7 @@ const SLA_COLORS: Record<string, string> = {
     at_risk: "text-amber-600",
     breached: "text-red-600",
     resolved: "text-gray-400",
+    closed: "text-gray-400",
 };
 
 export default async function TicketsPage(
@@ -91,8 +92,14 @@ export default async function TicketsPage(
         <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Tickets</h1>
-                    <p className="text-sm text-gray-500 mt-1">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</p>
+                    <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+                        {user.role === "AGENT" ? "My Assigned Tickets" : "Tickets"}
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {user.role === "AGENT"
+                            ? `${totalTickets} ticket${totalTickets !== 1 ? "s" : ""} assigned to you`
+                            : `${totalTickets} ticket${totalTickets !== 1 ? "s" : ""}`}
+                    </p>
                 </div>
                 {user.role !== "AGENT" && (
                     <Link href="/tickets/create" className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
@@ -131,7 +138,9 @@ export default async function TicketsPage(
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <p className="text-gray-500 text-sm mb-4">No tickets found.</p>
+                    <p className="text-gray-500 text-sm mb-4">
+                        {user.role === "AGENT" ? "No tickets have been assigned to you yet." : "No tickets found."}
+                    </p>
                     {user.role !== "AGENT" && (
                         <Link href="/tickets/create" className="inline-flex items-center justify-center bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">Create your first ticket</Link>
                     )}
@@ -154,8 +163,9 @@ export default async function TicketsPage(
                             </thead>
                             <tbody className="divide-y divide-gray-100 text-gray-600">
                                 {tickets.map((ticket: any) => {
-                                    const slaStatus = getSLAStatus(ticket.slaDeadline, ticket.resolvedAt);
-                                    const slaTime = formatSLATimeLeft(ticket.slaDeadline, ticket.resolvedAt);
+                                    const isClosed = ticket.status === "CLOSED";
+                                    const slaStatus = isClosed ? "closed" : getSLAStatus(ticket.slaDeadline, ticket.resolvedAt);
+                                    const slaTime = isClosed ? "Closed" : formatSLATimeLeft(ticket.slaDeadline, ticket.resolvedAt);
                                     return (
                                         <tr key={ticket.id} className="hover:bg-gray-50/50 transition-colors group">
                                             <td className="px-0 py-0">

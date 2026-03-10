@@ -99,7 +99,7 @@ export default function ApprovalPage() {
            <p className="text-sm text-gray-500 mt-1">Approve or reject this request for a new asset allocation.</p>
         </div>
         
-        {requestData.status === "PENDING" && (
+        {(requestData.status === "PENDING" || (requestData.status === "MANAGER_APPROVED" && currentUser?.role === "ADMIN")) && (
             <div className="flex gap-2">
                 <button 
                   onClick={() => handleAction("REJECTED")} 
@@ -113,7 +113,7 @@ export default function ApprovalPage() {
                   disabled={saving}
                   className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 shadow-sm"
                 >
-                  Approve
+                  {requestData.status === "MANAGER_APPROVED" ? "Final Approve" : "Approve"}
                 </button>
             </div>
         )}
@@ -122,7 +122,12 @@ export default function ApprovalPage() {
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-6">
           <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
              <h2 className="text-base font-semibold text-gray-900">Request Details</h2>
-             <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${requestData.status === "PENDING" ? "bg-amber-50 text-amber-700 border-amber-200" : requestData.status === "REJECTED" ? "bg-red-50 text-red-700 border-red-200" : "bg-gray-900 text-white border-transparent"}`}>
+             <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
+               requestData.status === "PENDING" ? "bg-amber-50 text-amber-700 border-amber-200"
+               : requestData.status === "MANAGER_APPROVED" ? "bg-blue-50 text-blue-700 border-blue-200"
+               : requestData.status === "REJECTED" ? "bg-red-50 text-red-700 border-red-200"
+               : "bg-gray-900 text-white border-transparent"
+             }`}>
                 {requestData.status.replace(/_/g, " ")}
              </span>
           </div>
