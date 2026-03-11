@@ -22,7 +22,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      name: 'SelfHosted'   # Use your self-hosted agent pool name
+      name: 'SelfHosted2'   # Use your self-hosted agent pool name
     steps:
     - task: Docker@2
       displayName: Build image

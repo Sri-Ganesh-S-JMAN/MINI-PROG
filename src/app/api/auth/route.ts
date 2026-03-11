@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server"
 import { Pool } from "pg"
 import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
  
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -29,7 +30,8 @@ export async function POST(req: Request) {
     const user = result.rows[0]
  
     // check password
-    if (user.password !== password) {
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Invalid email or password" },
         { status: 401 }

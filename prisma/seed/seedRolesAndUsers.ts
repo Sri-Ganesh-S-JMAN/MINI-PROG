@@ -35,6 +35,7 @@ export default async function seedRolesAndUsers(
 
   console.log("🌱 [Section 1] Seeding users...");
 
+  const hashedDefaultPassword = await bcrypt.hash("123456", 10);
   const usersData = [];
 
   // ---- ADMINS (5) ----
@@ -42,7 +43,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Admin User ${i}`,
       email: `admin${i}@itsm.com`,
-      password: "password",
+      password: hashedDefaultPassword,
       roleId: adminRole.id,
     });
   }
@@ -52,7 +53,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Manager ${i}`,
       email: `manager${i}@itsm.com`,
-      password: "password",
+      password: hashedDefaultPassword,
       roleId: managerRole.id,
     });
   }
@@ -62,7 +63,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Support Agent ${i}`,
       email: `agent${i}@itsm.com`,
-      password: "password",
+      password: hashedDefaultPassword,
       roleId: agentRole.id,
     });
   }
@@ -72,7 +73,7 @@ export default async function seedRolesAndUsers(
     usersData.push({
       name: `Employee ${i}`,
       email: `employee${i}@company.com`,
-      password: "password",
+      password: hashedDefaultPassword,
       roleId: employeeRole.id,
     });
   }
