@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcrypt';
 import { getCurrentUser } from '@/lib/auth';
 
 const ROLE_NAME_TO_ID: Record<string, number> = {
@@ -32,8 +33,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'A user with that email already exists.' }, { status: 409 });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await prisma.user.create({
-      data: { name, email, password, roleId },
+      data: { name, email, password: hashedPassword, roleId },
       select: { id: true, name: true, email: true, role: { select: { name: true } } },
     });
 
