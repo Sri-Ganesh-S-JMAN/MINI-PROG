@@ -44,10 +44,21 @@ export function middleware(request: NextRequest) {
     if (isEmployeeOrAgent && (
       path.startsWith("/dashboard") || 
       path.startsWith("/assets") || 
-      path.startsWith("/users")
+      path.startsWith("/users") ||
+      path.startsWith("/projects") ||
+      path.startsWith("/utilization")
     )) {
       console.log("Unauthorized access attempt. Redirecting to tickets.");
       return NextResponse.redirect(new URL("/tickets", request.url));
+    }
+
+    // Protect /my-projects for authenticated users only (already enforced above)
+    // ADMIN/MANAGER redirect away from /my-projects to their projects page
+    const isAdminOrManager = roleName
+      ? roleName === "ADMIN" || roleName === "MANAGER"
+      : roleId === 4 || roleId === 6;
+    if (isAdminOrManager && path.startsWith("/my-projects")) {
+      return NextResponse.redirect(new URL("/projects", request.url));
     }
  
     // If user has valid token and is on login page, redirect based on role
@@ -87,5 +98,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/tickets/:path*", "/assets/:path*", "/asset-requests/:path*", "/profile/:path*"],
+  matcher: ["/dashboard/:path*", "/login", "/tickets/:path*", "/assets/:path*", "/asset-requests/:path*", "/profile/:path*", "/projects/:path*", "/utilization/:path*", "/my-projects/:path*"],
 };

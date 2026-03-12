@@ -45,6 +45,12 @@ enum ApprovalStatus {
   APPROVED
   REJECTED
 }
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
  
 // ------------------------------------
 // MODELS
@@ -74,10 +80,11 @@ model User {
   ticketComments   TicketComment[]
   notifications    Notification[]
   assetAllocations AssetAllocation[]
- 
+  projectAllocations ProjectAllocation[]
+
   createdAt DateTime @default(now())
 }
- 
+
 model Ticket {
   id           Int          @id @default(autoincrement())
   title        String
@@ -175,4 +182,32 @@ model Approval {
   createdAt DateTime @default(now())
 }
 
+model Project {
+  id          String        @id
+  clientName  String
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  status      ProjectStatus @default(ACTIVE)
+  allocations ProjectAllocation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectAllocation {
+  id         Int      @id @default(autoincrement())
+  projectId  String
+  userId     Int
+  percentage Float
+  startDate  DateTime
+  endDate    DateTime
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
  

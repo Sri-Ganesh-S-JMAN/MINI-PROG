@@ -13,14 +13,21 @@ import {
   X,
   LogOut,
 } from "lucide-react";
+import * as LucideExtra from "lucide-react";
+const Briefcase = (LucideExtra as any).Briefcase as typeof LayoutDashboard;
+const BarChart2 = (LucideExtra as any).BarChart2 as typeof LayoutDashboard;
+const FolderKanban = (LucideExtra as any).FolderKanban as typeof LayoutDashboard;
 import { CurrentUser } from "@/lib/auth";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/tickets", icon: Ticket, label: "Tickets" },
-  { href: "/assets", icon: Box, label: "Asset" },
-  { href: "/asset-requests", icon: ClipboardList, label: "Asset Requests" },
-  { href: "/users", icon: UsersIcon, label: "Users" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["ADMIN", "MANAGER"] },
+  { href: "/tickets", icon: Ticket, label: "Tickets", roles: ["ADMIN", "MANAGER", "EMPLOYEE", "AGENT"] },
+  { href: "/assets", icon: Box, label: "Asset", roles: ["ADMIN", "MANAGER"] },
+  { href: "/asset-requests", icon: ClipboardList, label: "Asset Requests", roles: ["ADMIN", "MANAGER", "EMPLOYEE", "AGENT"] },
+  { href: "/users", icon: UsersIcon, label: "Users", roles: ["ADMIN", "MANAGER"] },
+  { href: "/projects", icon: Briefcase, label: "Projects", roles: ["ADMIN"] },
+  { href: "/utilization", icon: BarChart2, label: "Utilization", roles: ["ADMIN"] },
+  { href: "/my-projects", icon: FolderKanban, label: "My Projects", roles: ["EMPLOYEE", "AGENT"] },
 ];
 
 interface AdminSidebarProps {
@@ -98,16 +105,9 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
         {/* Nav */}
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          {navItems.map(({ href, icon: Icon, label }) => {
-            // Role-based visibility logic
-            // ADMIN and MANAGER can see everything
-            // EMPLOYEE and AGENT can only see Tickets and Asset Requests
-            const isUserOrAgent = user?.role === "EMPLOYEE" || user?.role === "AGENT";
-            const isAllowedForUser = href === "/tickets" || href === "/asset-requests";
-
-            if (isUserOrAgent && !isAllowedForUser) {
-               return null; // Skip rendering unauthorized tabs
-            }
+          {navItems.map(({ href, icon: Icon, label, roles }) => {
+            const userRole = user?.role ?? "";
+            if (!roles.includes(userRole)) return null;
 
             const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
             return (
